@@ -61,9 +61,9 @@ ipcMain.on('restart_app', () => {
 
 
 autoUpdater.on('update-available', () => {
-  mainWindow.webContents.send('update_available');
+  winApp.webContents.send('update_available');
 });
 
 autoUpdater.on('update-downloaded', () => {
-  mainWindow.webContents.send('update_downloaded');
+  winApp.webContents.send('update_downloaded');
 });

@@ -4,9 +4,23 @@
   box-sizing: border-box;
 }
 
-body, html {
+body {
+  font-family: 'Montserrat', sans-serif;
   overflow: hidden;
-  text-align: center;
+  background-color: #000000;
+  transition: 1s;
+}
+
+#version {
+  position: fixed;
+  transform: translate(-100%, -100%);
+  top: 100vh;
+  left: 100vw;
+  width: 190px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 13px;
+  color: #a1a1a1;
 }
 
 #notification {

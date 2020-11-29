@@ -6,6 +6,15 @@ const {ipcMain} = require('electron')
 var path = require('path')
 const { app, BrowserWindow } = require('electron')
 
+// var jsdom = require('jsdom');
+// const { JSDOM } = jsdom;
+// const { window } = new JSDOM();
+// const { document } = (new JSDOM('')).window;
+// global.document = document;
+//
+// var $, jQuery;
+// $ = jQuery = require('jquery');
+
 function startLoadingApp() {
   const winLoading = new BrowserWindow({
     width: 400,
@@ -19,7 +28,7 @@ function startLoadingApp() {
   winLoading.loadFile('index.html')
   setTimeout(function(){
     startApp();
-  },8000)
+  },500)
 }
 
 let winApp;

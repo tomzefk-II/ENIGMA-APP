@@ -1,6 +1,6 @@
 {
   "name": "ENIGMA-Launcher",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "ENIGMA Launcher",
   "main": "main.js",
   "scripts": {
@@ -16,12 +16,14 @@
   },
   "dependencies": {
     "electron-updater": "^4.3.5",
+    "jquery": "^3.5.1",
+    "jsdom": "^16.4.0",
     "npm-git-install": "^0.3.0",
     "osc-js": "^2.1.0",
     "ws": "^7.4.0"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/tomzefk/ENIGMA-APP.git"
+    "type": "git",
+    "url": "https://github.com/tomzefk/ENIGMA-APP.git"
   }
 }

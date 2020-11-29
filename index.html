@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link href="styles/styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <video id="intro" style="width: 100vw;" src="assets/intro/ENIGMA_intro.mp4" autoplay muted></video>
+  <script>
+  var intro = document.getElementById("intro");
+  intro.onended = function(){
+    setTimeout(function(){
+      window.close();
+    },1000)
+  };
+  </script>
+</body>
+</html>

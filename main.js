@@ -22,8 +22,9 @@ function startLoadingApp() {
   },8000)
 }
 
+let winApp;
 function startApp() {
-  const winApp = new BrowserWindow({
+  winApp = new BrowserWindow({
     width: 1280,
     height: 720,
     webPreferences: {

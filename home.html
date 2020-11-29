@@ -20,29 +20,31 @@
     </button>
   </div>
   <script>
-  const notification = document.getElementById('notification');
-  const message = document.getElementById('message');
-  const restartButton = document.getElementById('restart-button');
-  const { ipcRenderer } = require('electron');
-  ipcRenderer.on('update_available', () => {
-    ipcRenderer.removeAllListeners('update_available');
-    message.innerText = 'A new update is available. Downloading now...';
-    notification.classList.remove('hidden');
-  });
 
-  ipcRenderer.on('update_downloaded', () => {
-    ipcRenderer.removeAllListeners('update_downloaded');
-    message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
-    restartButton.classList.remove('hidden');
-    notification.classList.remove('hidden');
-  });
+    const { ipcRenderer } = require('electron');
+    const notification = document.getElementById('notification');
+    const message = document.getElementById('message');
+    const restartButton = document.getElementById('restart-button');
 
-  function closeNotification() {
-    notification.classList.add('hidden');
-  }
-  function restartApp() {
-    ipcRenderer.send('restart_app');
-  }
+    ipcRenderer.on('update_available', () => {
+      ipcRenderer.removeAllListeners('update_available');
+      message.innerText = 'A new update is available. Downloading now...';
+      notification.classList.remove('hidden');
+    });
+
+    ipcRenderer.on('update_downloaded', () => {
+      ipcRenderer.removeAllListeners('update_downloaded');
+      message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+      restartButton.classList.remove('hidden');
+      notification.classList.remove('hidden');
+    });
+
+    function closeNotification() {
+      notification.classList.add('hidden');
+    }
+    function restartApp() {
+      ipcRenderer.send('restart_app');
+    }
 
     const version = document.getElementById('version');
 
@@ -54,27 +56,27 @@
 
 
 
-    const ws = require('ws')
-    const dgram = require('dgram')
-    const OSC = require('osc-js')
-    const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
-    osc.open({ port: 9010 });
-    osc.on('open', () => {
-      console.log("Opened");
-    })
-    osc.on('/SendToBridge', message => {
-      console.log(message.address);
-      console.log(message.args[0]);
-      console.log(parseFloat(message.args[0]));
-
-      const oscUDP = new OSC({ plugin: new OSC.DatagramPlugin() })
-      oscUDP.open({ port: 9011 })
-      oscUDP.on('open', () => {
-        const socket = dgram.createSocket('udp4')
-        console.log(parseFloat(message.args[0]));
-        oscUDP.send(new OSC.Message('/SendToUE4', message.args[0]), { port: 9005 })
-      })
-    })
+    // const ws = require('ws')
+    // const dgram = require('dgram')
+    // const OSC = require('osc-js')
+    // const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
+    // osc.open({ port: 9010 });
+    // osc.on('open', () => {
+    //   console.log("Opened");
+    // })
+    // osc.on('/SendToBridge', message => {
+    //   console.log(message.address);
+    //   console.log(message.args[0]);
+    //   console.log(parseFloat(message.args[0]));
+    //
+    //   const oscUDP = new OSC({ plugin: new OSC.DatagramPlugin() })
+    //   oscUDP.open({ port: 9011 })
+    //   oscUDP.on('open', () => {
+    //     const socket = dgram.createSocket('udp4')
+    //     console.log(parseFloat(message.args[0]));
+    //     oscUDP.send(new OSC.Message('/SendToUE4', message.args[0]), { port: 9005 })
+    //   })
+    // })
   </script>
 </body>
 </html>

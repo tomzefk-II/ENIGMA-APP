@@ -1,6 +1,6 @@
 {
-  "name": "enigma-app",
-  "version": "0.0.1",
+  "name": "ENIGMA-Launcher",
+  "version": "0.0.3",
   "description": "ENIGMA Launcher",
   "main": "main.js",
   "scripts": {

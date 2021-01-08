@@ -42,6 +42,6 @@
   "build": {
     "win": {
       "icon": "assets/icons/win/icon.ico"
-    },
-  },
+    }
+  }
 }

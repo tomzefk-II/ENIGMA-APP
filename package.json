@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder build --win --publish never",
-    "deploy": "electron-builder build --win GH_TOKEN=7bc95b0da484c2d9d463b878dfc9c49e67e5513a --publish always"
+    "deploy": "electron-builder build --win --publish always"
   },
   "author": "tomzefk",
   "license": "ISC",

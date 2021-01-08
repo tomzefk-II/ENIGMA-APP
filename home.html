@@ -3,64 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <title>Hello World!</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
     <link href="styles/styles.css" rel="stylesheet" type="text/css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/app.js"></script>
 </head>
 <body>
+  <div class="app-menu">
+    <h5 class="app-title">ENIGMA Launcher</h5>
+    <div class="action-btns">
+      <svg id="minimize-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18px" height="18px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 19h12v2H6v-2z"/></svg>
+      <div id="maximize-btn" class=""></div>
+      <svg id="close-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18px" height="18px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+    </div>
+  </div>
   <h1 id="version"></h1>
 
+  <!-- -->
 
-  <div id="notification" class="hidden">
-    <p id="message"></p>
-    <button id="close-button" onClick="closeNotification()">
-      Close
-    </button>
-    <button id="restart-button" onClick="restartApp()" class="hidden">
-      Restart
-    </button>
+  <svg id="menu-open-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M0 0h24v24H0V0z" fill="none"/>
+    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+
+  <div id="playgame-wrapper">
+    <h1 id="project-phrase">SOMETHING ABOUT<br>THE PROJECT.</h1>
+    <div id="playgame-btn">
+      <h4></h4>
+    </div>
+    <div id="downloadWrapper">
+      <div class="progressBar"></div>
+      <h4></h4>
+    </div>
+  </div>
+
+  <div id="connections-wrapper">
+    <div id="bridge-connection" class="connection">
+      <svg class="connection-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d=""/></svg>
+      <h4 class="connection-name"></h3>
+    </div>
+    <div id="database-connection" class="connection">
+      <svg class="connection-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d=""/></svg>
+      <h4 class="connection-name"></h3>
+    </div>
+  </div>
+
+
+  <div id="blog-wrapper">
+    <h1>BLOG</h1>
+    <div class="blog-images-wrapper">
+      <div class="blog-image"></div>
+      <div class="blog-image"></div>
+    </div>
+  </div>
+
+  <div id="dimmer"></div>
+
+  <div id="signingOut-wrapper">
+    <h3>Signing out</h3>
+    <div class="sk-cube-grid">
+      <div class="sk-cube sk-cube1"></div>
+      <div class="sk-cube sk-cube2"></div>
+      <div class="sk-cube sk-cube3"></div>
+      <div class="sk-cube sk-cube4"></div>
+      <div class="sk-cube sk-cube5"></div>
+      <div class="sk-cube sk-cube6"></div>
+      <div class="sk-cube sk-cube7"></div>
+      <div class="sk-cube sk-cube8"></div>
+      <div class="sk-cube sk-cube9"></div>
+    </div>
+  </div>
+
+  <div id="menu-wrapper">
+    <svg id="menu-close-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M0 0h24v24H0V0z" fill="none"/>
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+    <div id="settings-wrapper">
+      <div id="setting-bridge-connection" class="setting-item">
+        <h3 class="setting-name">Bridge Connection</h3>
+        <svg class="setting-toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+      </div>
+      <div id="setting-automatic-login" class="setting-item">
+        <h3 class="setting-name">Automatic Login</h3>
+        <svg class="setting-toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        </div>
+      <div id="setting-theme" class="setting-item">
+        <h3 class="setting-name">Theme</h3>
+        <svg class="setting-theme" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M10 4c4.41 0 8 3.59 8 8s-3.59 8-8 8c-.34 0-.68-.02-1.01-.07C10.9 17.77 12 14.95 12 12s-1.1-5.77-3.01-7.93C9.32 4.02 9.66 4 10 4m0-2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z"/></svg>
+      </div>
+    </div>
+    <div id="accountWrapper">
+      <div class="account-icon-border">
+        <svg class="account-icon" viewBox="0 0 24 24">
+          <path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <h3 class="account-name">tomzefk</h3>
+      <br>
+      <p id="signOut">Sign out</p>
+    </div>
+  </div>
+
+
+
+  <div id="notification">
+    <h3>Update available.</h3>
+    <p id="restart-button" onClick="restartApp()">Restart</p>
   </div>
 
   <script>
 
-    var jsdom = require('jsdom');
-    const { JSDOM } = jsdom;
-    var $, jQuery;
-    $ = jQuery = require('jquery');
+    const { BrowserWindow } = require('electron').remote;
+
+    var connections = {
+      bridge:
+        {
+          "status":
+          {
+            "activated":
+            {
+              path: "M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zm0-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+            },
+            "disabled":
+            {
+              path: "M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+            }
+          },
+          "goodConnection":
+            {
+              text:
+              {
+                connected: "Connected successfully"
+              },
+              path: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"
+            },
+          "warningConnection":
+            {
+              text:
+              {
+                ready: "Ready to receive connections"
+              },
+              path: "M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            },
+          "errorConnection":
+            {
+              text:
+              {
+                error: "Couln't start Bridge",
+                disabled: "Bridge is disabled"
+              },
+              path: "M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+            }
+        },
+      database:
+        {
+          "goodConnection":
+            {
+              text:
+              {
+                connected: "Connected successfully to database"
+              },
+              path: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"
+            },
+          "warningConnection":
+            {
+              text:
+              {
+                connecting: "Trying to connect to the database"
+              },
+              path: "M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            },
+          "errorConnection":
+            {
+              text:
+              {
+                error: "Couldn't connect to the database"
+              },
+              path: "M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+            }
+        }
+    };
+
 
     $(document).ready(function(){
-      var body = document.getElementsByTagName("body")[0];
-      body.style.backgroundColor = "#1A1A1A";
+
+      setTimeout(function(){
+        document.getElementById("dimmer").style.backgroundColor = "rgba(0,0,0,0)";
+        document.getElementById("dimmer").style.visibility = "hidden";
+      },500);
+
+      console.log(connections);
+
+
+      localStorage.setItem("bridgeConnection", 0);
+      updateConnectionStatus("bridge-connection", "errorConnection", "disabled");
+      updateConnectionStatus("database-connection", "warningConnection", null);
+
+      connection.connect(function(err) {
+        if(err){
+          console.log("Disconnected!");
+          updateConnectionStatus("database-connection", "errorConnection", null);
+          throw err;
+        }
+        console.log("Connected!");
+        updateConnectionStatus("database-connection", "goodConnection", null);
+      });
+
+      checkGameDownloadStatus();
+
+
+      var menuWrapper = document.getElementById("menu-wrapper");
+      var playgamebtn = document.getElementById("playgame-btn");
+      var playgamebtnText = $("#playgame-btn h4");
+
+      $("#menu-open-btn").click(function(){
+        menuWrapper.style.left = "0px";
+        document.getElementById("dimmer").style.backgroundColor = "rgba(0,0,0,0.6)";
+        document.getElementById("dimmer").style.visibility = "visible";
+      })
+
+      $("#menu-close-btn").click(function(){
+        menuWrapper.style.left = "-" + $(menuWrapper).css("width");
+        document.getElementById("dimmer").style.backgroundColor = "rgba(0,0,0,0)";
+        document.getElementById("dimmer").style.visibility = "hidden";
+      })
+
+      $("#signOut").click(function(){
+        $("#menu-close-btn").click();
+        $("#signingOut-wrapper").css("opacity", "1");
+        $("#signingOut-wrapper").css("visibility", "visible");
+
+        var openIDB = openIDBshortcut();
+        openIDB.onupgradeneeded = function(evt){
+          var db = evt.target.result;
+          setTimeout(function(){
+            var clearPlayerInfo = db.transaction(['players'], "readwrite").objectStore("players").clear();
+            clearPlayerInfo.onsuccess = function(evt){
+              var clearSettings = db.transaction(['settings'], "readwrite").objectStore("settings").clear();
+              clearSettings.onsuccess = function(evt){
+                db.close();
+                localStorage.removeItem("UserSettings");
+                $("#dimmer").css("background-color", "rgba(0,0,0,1)");
+                $("#dimmer").css("visibility", "visible");
+                setTimeout(function(){
+                  const { ipcRenderer } = require('electron');
+                  ipcRenderer.send('signOut');
+                  setTimeout(function(){
+                    window.close();
+                  },800)
+                },1500)
+              }
+            }
+          },500)
+        }
+      });
+
+      var playgameClick = $("#playgame-btn").click(function(){
+        console.log("clicked");
+        const request = require('request')
+        const RequestInfo = require('request-download-info')
+        const fs = require('fs')
+
+        var currentGameState = $("#playgame-btn h4").text();
+        $("#playgame-btn").off("click", playgameClick);
+        if(currentGameState == "DOWNLOAD"){
+          $("#playgame-btn h4").css("opacity", "0");
+          setTimeout(function(){
+            $("#playgame-btn h4").text("DOWNLOADING");
+            $("#playgame-btn h4").css("opacity", "1");
+            $("#downloadWrapper").css("opacity", "1");
+            $("#downloadWrapper").css("visibility", "visible");
+            let info = new RequestInfo(
+              request('http://tomzefk.dev/enigma/downloadableGameFiles/package.zip')
+            )
+            info.on('progress', status => {
+              console.log(status);
+              $("#downloadWrapper h4").text(Math.round(status.percent) + "%");
+              $("#downloadWrapper .progressBar").css("width", status.percent + "%");
+              if(status.percent == 100){
+                console.log("download completed.");
+                const decompress = require('decompress');
+                $("#playgame-btn h4").css("opacity", "0");
+
+                setTimeout(function(){
+                  $("#playgame-btn h4").text("UNPACKING");
+                  $("#playgame-btn h4").css("opacity", "1");
+                  $("#downloadWrapper").css("opacity", "0");
+                  $("#downloadWrapper").css("visibility", "hidden");
+
+                  var zipPath = 'gameFiles/package.zip';
+                  decompress(zipPath, 'gameFiles').then(files => {
+                    console.log('unpack completed!');
+                    $("#playgame-btn h4").css("opacity", "0");
+                    setTimeout(function(){
+                      $("#playgame-btn h4").text("PLAY GAME");
+                      $("#playgame-btn h4").css("opacity", "1");
+                      $("#playgame-btn").on("click", playgameClick);
+                    },800)
+                  }).catch(error => {
+                    //zip corrupted
+                    console.log(".zip is corrupted.");
+                    fs.unlink('gameFiles/package.zip', (err) => {
+                    if (err) throw err;
+                      console.log('gameFiles/package.zip' + ' was deleted');
+                    });
+                  });
+
+                },800);
+
+              }
+            }).pipe(fs.createWriteStream('gameFiles/package.zip'))
+
+          },800);
+        } else if(currentGameState == "PLAY GAME"){
+          $("#playgame-btn h4").css("opacity", "0");
+          setTimeout(function(){
+            $("#playgame-btn h4").text("PLAYING");
+            $("#playgame-btn h4").css("opacity", "1");
+
+            var child = require('child_process').execFile;
+            var executablePath = "gameFiles/package/WindowsNoEditor/SimpleUnrealExample.exe";
+            child(executablePath, function(err, data) {
+              if(err){
+                 console.error(err);
+                 return;
+              }
+              $("#playgame-btn h4").css("opacity", "0");
+              setTimeout(function(){
+                $("#playgame-btn h4").text("PLAY GAME");
+                $("#playgame-btn h4").css("opacity", "1");
+              },800);
+            });
+          },800);
+        }
+      })
+
+      $("#setting-bridge-connection .setting-toggle").click(function(){
+        var setting = $("#setting-bridge-connection .setting-toggle path");
+        if($(setting).attr("d") == connections.bridge.status.activated.path){
+          console.log("Bridge disabled");
+          $(setting).attr("d", connections.bridge.status.disabled.path);
+          // code
+        } else {
+          console.log("Bridge activated");
+          $(setting).attr("d", connections.bridge.status.activated.path);
+          startBridge();
+          // code
+        }
+
     })
 
-    const { ipcRenderer } = require('electron');
-    const notification = document.getElementById('notification');
-    const message = document.getElementById('message');
+
+      $("#minimize-btn").click(function(){
+        var window = BrowserWindow.getFocusedWindow();
+        window.minimize();
+      });
+
+      $("#maximize-btn").click(function(){
+        var window = BrowserWindow.getFocusedWindow();
+        if(window.isMaximized()){
+          window.unmaximize();
+        } else {
+          window.maximize();
+        }
+      });
+
+      $("#close-btn").click(function(){
+        var window = BrowserWindow.getFocusedWindow();
+        window.close();
+      });
+    })
+
+    const notification = $("#notification");
+    const message = $("#notification h3");
     const restartButton = document.getElementById('restart-button');
 
     ipcRenderer.on('update_available', () => {
       ipcRenderer.removeAllListeners('update_available');
-      message.innerText = 'A new update is available. Downloading now...';
-      notification.classList.remove('hidden');
+      message.innerText = 'Downloading update';
+      $(notification).css("opacity", "1");
+      $(notification).css("visibility", "visible");
     });
 
     ipcRenderer.on('update_downloaded', () => {
       ipcRenderer.removeAllListeners('update_downloaded');
-      message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
-      restartButton.classList.remove('hidden');
-      notification.classList.remove('hidden');
+      message.innerText = 'Update ready.';
+      $(notification).css("opacity", "1");
+      $(notification).css("visibility", "visible");
     });
 
-    function closeNotification() {
-      notification.classList.add('hidden');
-    }
     function restartApp() {
       ipcRenderer.send('restart_app');
     }
 
-    const version = document.getElementById('version');
+    // const version = document.getElementById('version');
 
     ipcRenderer.send('app_version');
     ipcRenderer.on('app_version', (event, arg) => {
@@ -74,7 +413,7 @@
     // const dgram = require('dgram')
     // const OSC = require('osc-js')
     // const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
-    // osc.open({ port: 9010 });
+    // osc.open({ host: "192.168.1.85", port: 9010, secure: true });
     // osc.on('open', () => {
     //   console.log("Opened");
     // })
@@ -91,6 +430,111 @@
     //     oscUDP.send(new OSC.Message('/SendToUE4', message.args[0]), { port: 9005 })
     //   })
     // })
+
+    var osc = require("osc"), https = require("https"), fs = require("fs"), WebSocket = require("ws");
+
+    // var os = require('os');
+    // var networkInterfaces = os.networkInterfaces();
+    // console.log(networkInterfaces);
+    // var localIp = networkInterfaces.Ethernet[3].address;
+
+    updateConnectionStatus = function(connectionName, status, subStatus){
+      console.log("started function");
+      $("#" + connectionName).removeClass("refreshStatus");
+      setTimeout(function(){
+        $("#" + connectionName).addClass("refreshStatus");
+        console.log($("#" + connectionName));
+          setTimeout(function(){
+            if(connectionName == "database-connection"){
+              if(status == "goodConnection"){
+                $("#" + connectionName + " .connection-name").text(connections.database.goodConnection.text.connected);
+                $("#" + connectionName + " .connection-icon path").attr("d", connections.database.goodConnection.path);
+                $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                $("#" + connectionName + " .connection-icon").addClass("icon-good");
+              } else if(status == "warningConnection"){
+                $("#" + connectionName + " .connection-name").text(connections.database.warningConnection.text.connecting);
+                $("#" + connectionName + " .connection-icon path").attr("d", connections.database.warningConnection.path);
+                $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                $("#" + connectionName + " .connection-icon").addClass("icon-warning");
+              } else if(status == "errorConnection"){
+                $("#" + connectionName + " .connection-name").text(connections.database.errorConnection.text.error);
+                $("#" + connectionName + " .connection-icon path").attr("d", connections.database.errorConnection.path);
+                $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                $("#" + connectionName + " .connection-icon").addClass("icon-error");
+              }
+            } else if(connectionName == "bridge-connection"){
+              if(status == "goodConnection"){
+                $("#" + connectionName + " .connection-name").text(connections.bridge.goodConnection.text.connected);
+                $("#" + connectionName + " .connection-icon path").attr("d", connections.bridge.goodConnection.path);
+                $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                $("#" + connectionName + " .connection-icon").addClass("icon-good");
+              } else if(status == "warningConnection"){
+                $("#" + connectionName + " .connection-name").text(connections.bridge.warningConnection.text.ready);
+                $("#" + connectionName + " .connection-icon path").attr("d", connections.bridge.warningConnection.path);
+                $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                $("#" + connectionName + " .connection-icon").addClass("icon-warning");
+              } else if(status == "errorConnection"){
+                if(subStatus == "error"){
+                  $("#" + connectionName + " .connection-name").text(connections.bridge.errorConnection.text.error);
+                  $("#" + connectionName + " .connection-icon path").attr("d", connections.bridge.errorConnection.path);
+                  $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                  $("#" + connectionName + " .connection-icon").addClass("icon-error");
+                } else if(subStatus == "disabled"){
+                  $("#" + connectionName + " .connection-name").text(connections.bridge.errorConnection.text.disabled);
+                  $("#" + connectionName + " .connection-icon path").attr("d", connections.bridge.errorConnection.path);
+                  $("#" + connectionName + " .connection-icon").removeClass(); $("#" + connectionName + " svg").addClass("connection-icon");
+                  $("#" + connectionName + " .connection-icon").addClass("icon-error");
+                }
+              }
+            }
+          },500)
+        },0) // dunno why this happens
+      }
+
+    startBridge = function(){
+      console.log("Started Bridge");
+      const server = https.createServer({
+        cert: fs.readFileSync('cert/cert.pem'),
+        key: fs.readFileSync('cert/key.pem')
+      });
+
+      const wss = new WebSocket.Server({ server });
+
+      // Listen for Web Socket connections.
+      wss.on("listening", function () {
+        console.log("listening");
+        updateConnectionStatus("bridge-connection", "warningConnection", null);
+      });
+
+      wss.on("connection", function (socket) {
+        console.log("Connection received");
+          var socketPort = new osc.WebSocketPort({
+              socket: socket,
+              metadata: true
+          });
+
+          socketPort.on("message", function (oscMsg) {
+              console.log("An OSC Message was received!", oscMsg);
+          });
+      });
+      server.listen(9010);
+    }
+
+    configurePWA = function(){
+      const https = require('https');
+      const fs = require('fs');
+
+      const options = {
+        key: fs.readFileSync('cert/key.pem'),
+        cert: fs.readFileSync('cert/cert.pem')
+      };
+
+      https.createServer(options, function (req, res) {
+        res.writeHead(301, {Location: 'https://enigma.tomzefk.dev/configurationCompleted.html'});
+        res.end();
+      }).listen(9009);
+      }
+
   </script>
 </body>
 </html>

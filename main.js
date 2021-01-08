@@ -5,46 +5,22 @@ const appElectron = electron.app
 const {ipcMain} = require('electron')
 var path = require('path')
 const { app, BrowserWindow } = require('electron')
-
-// var jsdom = require('jsdom');
-// const { JSDOM } = jsdom;
-// const { window } = new JSDOM();
-// const { document } = (new JSDOM('')).window;
-// global.document = document;
+const express = require("express")
 //
-// var $, jQuery;
-// $ = jQuery = require('jquery');
 
 function startLoadingApp() {
   const winLoading = new BrowserWindow({
     width: 400,
     height: 400,
     frame: false,
+    backgroundColor: "#161616",
+    resizable: false,
     webPreferences: {
       nodeIntegration: true
     }
   })
 
   winLoading.loadFile('index.html')
-  setTimeout(function(){
-    startApp();
-  },500)
-}
-
-let winApp;
-function startApp() {
-  winApp = new BrowserWindow({
-    width: 1280,
-    height: 720,
-    webPreferences: {
-      nodeIntegration: true
-    }
-  })
-
-  winApp.loadFile('home.html')
-  winApp.once('ready-to-show', () => {
-    autoUpdater.checkForUpdatesAndNotify();
-  });
 }
 
 app.whenReady().then(startLoadingApp)
@@ -67,6 +43,47 @@ ipcMain.on('app_version', (event) => {
 
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
+});
+
+ipcMain.on('open_login', (evt) => {
+  console.log(evt);
+  const winLoading = new BrowserWindow({
+    width: 500,
+    height: 720,
+    frame: false,
+    backgroundColor: "#161616",
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+
+  winLoading.loadFile('login.html')
+});
+
+let winApp;
+ipcMain.on('open_home', (evt) => {
+  winApp = new BrowserWindow({
+    width: 1280,
+    height: 720,
+    frame: false,
+    backgroundColor: "#161616",
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true,
+      webSecurity: false,
+    }
+  })
+
+ipcMain.on('signOut', (evt) => {
+  startLoadingApp();
+})
+
+  winApp.loadFile('home.html')
+  winApp.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
 });
 
 

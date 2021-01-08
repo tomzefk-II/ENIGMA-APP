@@ -5,34 +5,532 @@
 }
 
 body {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Montserrat', sans-serif!important;
   overflow: hidden;
-  background-color: #000000;
+  background-color: #161616!important;
   transition: 1s;
 }
 
-#version {
-  position: fixed;
-  transform: translate(-100%, -100%);
-  top: 100vh;
-  left: 100vw;
-  width: 190px;
-  text-align: right;
-  font-weight: 700;
-  font-size: 13px;
-  color: #a1a1a1;
+.text-grey {
+  color: #dbdbdb;
 }
 
-#notification {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 200px;
-  padding: 20px;
+/* --- */
+
+
+/* LOGIN PAGE */
+
+#loginForm {
+  transition: 1s;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.formButtons {
+  padding: 3px 20px;
+  background-color: #161616;
+  border: 2px solid #dbdbdb;
   border-radius: 5px;
-  background-color: white;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  color: #dbdbdb;
 }
-.hidden {
-  display: none;
+
+input.loginInputs {
+  background-color: #161616;
+  border: 2px solid #dbdbdb;
+  border-radius: 5px;
+  color: #dbdbdb;
 }
+
+#loginInfo {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  top: 97.5%;
+  left: 50%;
+  width: 100%;
+  font-size: 16px;
+}
+
+/* END LOGIN PAGE */
+
+
+/* HOME PAGE */
+
+  /* home.html WINDOW CONTROLS */
+
+  .app-menu {
+    user-select: none;
+    -webkit-app-region: drag;
+    width: 100vw;
+    height: 30px;
+    background-color: #141414;
+    z-index: 9999;
+  }
+
+  .app-title {
+    position: absolute;
+    transform: translate(0%, -50%);
+    color: #909090;
+    top: 12.5px;
+    left: 8px;
+    font-size: 15px;
+  }
+
+  .action-btns {
+    -webkit-app-region: no-drag;
+    position: absolute;
+    right: 2px;
+    top: -1px;
+    width: 70px;
+    height: 25px;
+  }
+
+  .action-btns > svg:first-child {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 25px;
+    height: 25px;
+    fill: #909090;
+  }
+
+  .action-btns > svg:last-child {
+    position: absolute;
+    bottom: -5px;
+    right: 0;
+    width: 25px;
+    height: 25px;
+    fill: #909090;
+  }
+
+  .action-btns > svg:first-child:hover {
+    fill: #fff;
+  }
+
+  .action-btns > svg:last-child:hover {
+    fill: #B54B4B;
+  }
+
+  .action-btns div {
+    transform: translate(-50%, 0%);
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    width: 12.5px;
+    height: 12.5px;
+    border: 2px solid #909090;
+  }
+
+  .action-btns div:hover {
+    border-color: #fff;
+  }
+
+  /* END home.html WINDOW CONTROLS */
+
+
+  /* UPDATE NOTIFICATION */
+
+  #notification {
+    transform: translate(0%, -100%);
+    padding: 10px;
+    position: fixed;
+    top: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.5s;
+  }
+
+  #notification h3 {
+    float: left;
+    color: #dbdbdb;
+  }
+
+  #restart-button {
+    float: right;
+    margin: 3px 10px;
+    opacity: 0;
+    visibility: hidden;
+    color: #dbdbdb;
+    transition: 0.5s;
+  }
+
+  #restart-button:hover {
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* END UPDATE NOTIFICATION */
+
+
+  /* PLAY GAME WRAPPER */
+
+  #playgame-wrapper {
+    float: left;
+    transform: translate(0%, -50%);
+    margin-top: 45vh;
+    margin-left: 55px;
+  }
+
+  #project-phrase {
+    font-size: 65px;
+    color: #dbdbdb;
+  }
+
+  #playgame-btn {
+    display: inline-block;
+    margin-top: 15px;
+    border-radius: 28px;
+    border: 3px solid #a1a1a1;
+    background-color: #121212;
+    box-shadow: 0px 5px 30px 3px rgba(0,0,0,0.8);
+    transition: 1s;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #playgame-btn:hover {
+    cursor: pointer;
+    box-shadow: 0px 0px 0px 0px rgba(0,0,0,0);
+  }
+
+  #playgame-btn h4 {
+    user-select: none;
+    font-size: 16px;
+    margin: 18px;
+    color: #dbdbdb;
+    transition: 0.5s;
+  }
+
+  #downloadWrapper {
+    width: 100%;
+    margin: 20px 0px;
+    padding: 20px 0px;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.5s;
+  }
+
+  #downloadWrapper .progressBar {
+    width: 0%;
+    height: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #fff;
+    transition: 1s;
+  }
+
+  #downloadWrapper h4 {
+    font-size: 16px;
+    color: #dbdbdb;
+  }
+
+  /* END PLAY GAME WRAPPER */
+
+
+  /* CONNECTIONS WRAPPER */
+
+  #connections-wrapper {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    transform: translate(-50%, -100%);
+    height: 50px;
+    left: 50vw;
+    top: 100vh;
+    margin: 10px;
+  }
+
+  #connections-wrapper .connection {
+    margin: 0px 24px;
+  }
+
+  .refreshStatus {
+    animation: refreshAnim 1s;
+  }
+
+  @keyframes refreshAnim {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  #connections-wrapper .connection .connection-icon {
+    float: left;
+    width: 25px;
+    height: 25px;
+    margin-right: 8px;
+    fill: white;
+  }
+
+  #connections-wrapper .connection .icon-good {
+    fill: #33B749;
+  }
+
+  #connections-wrapper .connection .icon-warning {
+    fill: #B59E28;
+  }
+
+  #connections-wrapper .connection .icon-error {
+    fill: #B54B4B;
+  }
+
+  #connections-wrapper .connection .connection-name {
+    /* float: right; */
+    white-space: nowrap;
+    margin: 3px 3px;
+    color: #dbdbdb;
+  }
+
+
+
+
+  /* END CONNECTIONS WRAPPER */
+
+
+  /* BLOG WRAPPER */
+
+  #blog-wrapper {
+    float:right;
+    margin-top: 12vh;
+    margin-right: 30px;
+  }
+
+  #blog-wrapper h1 {
+    font-size: 40px;
+    text-align: center;
+    color: #dbdbdb;
+  }
+
+  #blog-wrapper .blog-image {
+    width: 330px;
+    height: 185px;
+    border: 3px solid #ffffff;
+    margin: 25px;
+    background-color: #121212;
+  }
+
+
+  /* END BLOG WRAPPER */
+
+
+  /* MENU WRAPPER */
+
+  #menu-wrapper {
+    position: absolute;
+    width: 300px;
+    height: 100vh;
+    left: -300px;
+    background-color: #202020;
+    border-right: 2px solid #dbdbdb;
+    transition: 0.5s;
+  }
+
+  #menu-close-btn {
+    position: fixed;
+    width: 35px;
+    height: 35px;
+    margin: 5px 10px;
+    fill: #fff;
+  }
+
+  #settings-wrapper {
+    margin-top: 100px;
+    /* background-color: red; */
+  }
+
+  .setting-item {
+    margin: 5px 0;
+    padding: 12px;
+    /* background-color: green; */
+  }
+
+  .setting-name {
+    display: inline-block;
+    transform: translate(0%, 8%);
+    font-size: 22px;
+    color: #dbdbdb;
+  }
+
+  .setting-toggle {
+    position: absolute;
+    right: 0;
+    width: 35px;
+    height: 35px;
+    margin: 0px 8px;
+    fill: white;
+  }
+  .setting-toggle path {
+    transition: 0.4s;
+  }
+
+  .setting-setup {
+    float: right;
+    margin: 7px 2px;
+    color: white;
+  }
+
+  .setting-theme {
+    position: absolute;
+    transform: rotate(30deg);
+    right: 0;
+    width: 30px;
+    height: 30px;
+    margin: 0px 8px;
+    fill: white;
+  }
+
+  #menu-wrapper #accountWrapper {
+    position: absolute;
+    top: calc(100% - 105px);
+    width: 100%;
+    height: 75px;
+    padding: 10px;
+  }
+
+  #menu-wrapper #accountWrapper .account-icon-border {
+    float: left;
+    width: 55px;
+    height: 100%;
+    border: 5px solid #dbdbdb;
+  }
+  #menu-wrapper #accountWrapper .account-icon {
+    fill: #dbdbdb;
+    height: 100%;
+  }
+
+  #menu-wrapper #accountWrapper .account-name {
+    display: inline-block;
+    margin-left: 10px;
+    margin-top: 5px;
+    color: #dbdbdb;
+  }
+
+  #menu-wrapper #accountWrapper #signOut {
+    display: inline-block;
+    margin-left: 10px;
+    color: #aaa;
+    transition: 0.5s;
+  }
+  #menu-wrapper #accountWrapper #signOut:hover {
+    color: #fff;
+    cursor: pointer;
+  }
+
+
+  /* END MENU WRAPPER */
+
+
+  #dimmer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,1);
+    transition: 1s;
+  }
+
+  #signingOut-wrapper {
+    transform: translate(0%, -100%);
+    padding: 10px;
+    position: fixed;
+    top: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.5s;
+  }
+
+  #signingOut-wrapper h3 {
+    float: left;
+    text-align: center;
+    color: #dbdbdb;
+  }
+
+  .sk-cube-grid {
+    float: right;
+    margin: 5px 10px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .sk-cube-grid .sk-cube {
+    width: 30%;
+    height: 30%;
+    background-color: #dbdbdb;
+    margin: 1%;
+    float: left;
+    -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+            animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+  }
+  .sk-cube-grid .sk-cube1 {
+    -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s; }
+  .sk-cube-grid .sk-cube2 {
+    -webkit-animation-delay: 0.3s;
+            animation-delay: 0.3s; }
+  .sk-cube-grid .sk-cube3 {
+    -webkit-animation-delay: 0.4s;
+            animation-delay: 0.4s; }
+  .sk-cube-grid .sk-cube4 {
+    -webkit-animation-delay: 0.1s;
+            animation-delay: 0.1s; }
+  .sk-cube-grid .sk-cube5 {
+    -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s; }
+  .sk-cube-grid .sk-cube6 {
+    -webkit-animation-delay: 0.3s;
+            animation-delay: 0.3s; }
+  .sk-cube-grid .sk-cube7 {
+    -webkit-animation-delay: 0s;
+            animation-delay: 0s; }
+  .sk-cube-grid .sk-cube8 {
+    -webkit-animation-delay: 0.1s;
+            animation-delay: 0.1s; }
+  .sk-cube-grid .sk-cube9 {
+    -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s; }
+
+  @-webkit-keyframes sk-cubeGridScaleDelay {
+    0%, 70%, 100% {
+      -webkit-transform: scale3D(1, 1, 1);
+              transform: scale3D(1, 1, 1);
+    } 35% {
+      -webkit-transform: scale3D(0, 0, 1);
+              transform: scale3D(0, 0, 1);
+    }
+  }
+
+  @keyframes sk-cubeGridScaleDelay {
+    0%, 70%, 100% {
+      -webkit-transform: scale3D(1, 1, 1);
+              transform: scale3D(1, 1, 1);
+    } 35% {
+      -webkit-transform: scale3D(0, 0, 1);
+              transform: scale3D(0, 0, 1);
+    }
+  }
+
+  #version {
+    position: fixed;
+    transform: translate(-100%, -100%);
+    top: 100vh;
+    left: 100vw;
+    width: 190px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 13px;
+    color: #707070;
+  }
+
+  #menu-open-btn {
+    position: fixed;
+    width: 35px;
+    height: 35px;
+    margin: 5px 10px;
+    fill: #FFF;
+  }

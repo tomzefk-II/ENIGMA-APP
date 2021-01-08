@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link href="styles/styles.css" rel="stylesheet" type="text/css">
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style media="screen">
+    body, html {
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+      background-color: #161616;
+    }
+    </style>
+  </head>
+  <body>
+
+    <form method="post" id="loginForm" class="p-5" style="position: absolute; transform: translate(-50%, -50%); top: 50%; left: 50%; box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.4); z-index: 5;">
+      <h1 id="formTitle" class="font-weight-bold text-center text-grey m-3" style="-webkit-text-fill-color: rgba(0,0,0,0); -webkit-text-stroke: 1px #dbdbdb;"></h1>
+      <div class="text-center w-20">
+        <div>
+          <h4 class="m-0 mb-2 text-grey">Username</h4>
+          <input id="usernameInput" class="loginInputs" type="text" name="username" value="" minlength="6" maxlength="12" required disabled>
+        </div>
+        <br>
+        <div class="mb-3">
+          <h4 class="m-0 mb-2 text-grey">Password</h4>
+          <input id="passwordInput" class="loginInputs" type="password" name="password" value="" minlength="6" required disabled>
+        </div>
+        <input class="mt-3 ml-2 formButtons" type="button" name="" value="" id="" disabled>
+        <p id="accText" class="mt-4 text-grey" data-type=""></p> <!-- Do not have an account? Register here / Already have an account? Login here -->
+        <br>
+      </div>
+    </form>
+    <h4 id="loginInfo" class="text-center text-grey p-4"></h4>
+
+    <script src="js/app.js"></script>
+    <script>
+
+    $(document).ready(function(){
+
+      var connection = mysql.createConnection({
+        host     : '45.87.81.51',
+        user     : 'u501538363_players',
+        password : 'Enigma_Players_123',
+        database : 'u501538363_enigma'
+      });
+      connection.connect(function(err) {
+        if(err){
+          console.log("Disconnected!");
+          throw err;
+        }
+        console.log("Connected!");
+        checkingPlayerInfo();
+      });
+    })
+
+    goToHome = function(){
+      setTimeout(function(){
+        const { ipcRenderer } = require('electron');
+        ipcRenderer.send('open_home')
+        setTimeout(function(){
+          window.close();
+        },500)
+      },1500)
+    }
+
+
+
+    </script>
+  </body>
+</html>

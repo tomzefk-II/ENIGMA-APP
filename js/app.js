@@ -655,8 +655,8 @@ checkGameDownloadStatus = function(){
   console.log("checking");
   const fs = require('fs');
   var child = require('child_process');
-  var exePath = 'gameFiles/package/WindowsNoEditor/SimpleUnrealExample.exe';
-  var zipPath = 'gameFiles/package.zip';
+  var exePath = 'package/WindowsNoEditor/SimpleUnrealExample.exe';
+  var zipPath = 'package.zip';
   if(fs.existsSync(exePath)){
     //file exists
     //run exe
@@ -683,9 +683,9 @@ checkGameDownloadStatus = function(){
     }).catch(error => {
       //zip corrupted
       console.log(".zip is corrupted.");
-      fs.unlink('gameFiles/package.zip', (err) => {
+      fs.unlink('package.zip', (err) => {
       if (err) throw err;
-        console.log('gameFiles/package.zip' + ' was deleted');
+        console.log('package.zip' + ' was deleted');
       });
     });
 

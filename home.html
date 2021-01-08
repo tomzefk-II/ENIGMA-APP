@@ -294,7 +294,7 @@
                   $("#downloadWrapper").css("opacity", "0");
                   $("#downloadWrapper").css("visibility", "hidden");
 
-                  var zipPath = 'gameFiles/package.zip';
+                  var zipPath = 'package.zip';
                   decompress(zipPath, 'gameFiles').then(files => {
                     console.log('unpack completed!');
                     $("#playgame-btn h4").css("opacity", "0");
@@ -306,9 +306,9 @@
                   }).catch(error => {
                     //zip corrupted
                     console.log(".zip is corrupted.");
-                    fs.unlink('gameFiles/package.zip', (err) => {
+                    fs.unlink('package.zip', (err) => {
                     if (err) throw err;
-                      console.log('gameFiles/package.zip' + ' was deleted');
+                      console.log('package.zip' + ' was deleted');
                     });
                   });
 

@@ -40,6 +40,7 @@
     "url": "https://github.com/tomzefk-II/ENIGMA-APP.git"
   },
   "build": {
+    "appId": "com.example.app",
     "extraResources": [
       "cert/cert.pem",
       "cert/key.pem"

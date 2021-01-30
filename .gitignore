@@ -5,3 +5,4 @@ cert/
 electron-builder.yml
 san.cnf
 san2.cnf
+electron-builder.env

@@ -86,6 +86,11 @@ ipcMain.on('signOut', (evt) => {
   startLoadingApp();
 })
 
+autoUpdater.on('error', (error) => {
+  console.log(error);
+  winApp.webContents.send('error');
+});
+
 autoUpdater.on('update-available', () => {
   winApp.webContents.send('update_available');
 });

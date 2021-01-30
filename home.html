@@ -373,6 +373,7 @@
     const restartButton = document.getElementById('restart-button');
 
     ipcRenderer.on('update_available', () => {
+      console.log("update available");
       ipcRenderer.removeAllListeners('update_available');
       message.innerText = 'Downloading update';
       $(notification).css("opacity", "1");
@@ -380,10 +381,15 @@
     });
 
     ipcRenderer.on('update_downloaded', () => {
+      console.log("update downloaded");
       ipcRenderer.removeAllListeners('update_downloaded');
       message.innerText = 'Update ready.';
       $(notification).css("opacity", "1");
       $(notification).css("visibility", "visible");
+    });
+
+    ipcRenderer.on('error', (error) => {
+      console.log(error);
     });
 
     function restartApp() {

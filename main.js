@@ -74,18 +74,17 @@ ipcMain.on('open_home', (evt) => {
       enableRemoteModule: true,
       webSecurity: false,
     }
-  })
-
-ipcMain.on('signOut', (evt) => {
-  startLoadingApp();
-})
-
+  });
   winApp.loadFile('home.html')
+
   winApp.once('ready-to-show', () => {
     autoUpdater.checkForUpdatesAndNotify();
   });
 });
 
+ipcMain.on('signOut', (evt) => {
+  startLoadingApp();
+})
 
 autoUpdater.on('update-available', () => {
   winApp.webContents.send('update_available');

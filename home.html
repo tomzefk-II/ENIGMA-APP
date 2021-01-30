@@ -551,8 +551,8 @@
         // code
       } else {
         var server = https.createServer({
-          cert: fs.readFileSync('cert/cert.pem'),
-          key: fs.readFileSync('cert/key.pem')
+          cert: fs.readFileSync('resources/cert/cert.pem'),
+          key: fs.readFileSync('resources/cert/key.pem')
         });
         var wss = new WebSocket.Server({ server });
         wss.on("connection", function (socket) {
@@ -584,8 +584,8 @@
       // const http = require('http');
       console.log("Turning on configuration server");
       const options = {
-        key: fs.readFileSync('cert/key.pem'),
-        cert: fs.readFileSync('cert/cert.pem')
+        key: fs.readFileSync('resources/cert/key.pem'),
+        cert: fs.readFileSync('resources/cert/cert.pem')
       };
       https.createServer(options, function (req, res) {
         console.log("Server created");

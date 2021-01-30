@@ -48,6 +48,8 @@ input.loginInputs {
   left: 50%;
   width: 100%;
   font-size: 16px;
+  transition: 0.5s;
+  opacity: 0;
 }
 
 /* END LOGIN PAGE */
@@ -354,6 +356,11 @@ input.loginInputs {
     transform: translate(0%, 8%);
     font-size: 22px;
     color: #dbdbdb;
+    user-select: none;
+  }
+
+  #configurebridge {
+    cursor: pointer;
   }
 
   .setting-toggle {
@@ -363,15 +370,10 @@ input.loginInputs {
     height: 35px;
     margin: 0px 8px;
     fill: white;
+    cursor: pointer;
   }
   .setting-toggle path {
     transition: 0.4s;
-  }
-
-  .setting-setup {
-    float: right;
-    margin: 7px 2px;
-    color: white;
   }
 
   .setting-theme {
@@ -382,6 +384,7 @@ input.loginInputs {
     height: 30px;
     margin: 0px 8px;
     fill: white;
+    cursor: pointer;
   }
 
   #menu-wrapper #accountWrapper {

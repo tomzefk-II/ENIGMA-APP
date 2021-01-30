@@ -16,7 +16,7 @@ let ObjectStores = [
   },
   {
     OSName: "settings",
-    OSIndex: ["setting_id", "automatic_login", "theme"]
+    OSIndex: ["setting_id", "theme"]
   }
 ];
 
@@ -278,20 +278,22 @@ function startApp(){
     console.log(idb_quests);
     var openIDB = openIDBshortcut();
     openIDB.onupgradeneeded = function(evt) {
-      var db = evt.target.result;
-      if(idb_quests == 0){
-        console.log("There are no quests present on indexedDB");
-        console.log("Player can't login");
-      } else {
-        var checkQuest = db.transaction(['quests'], "readwrite").objectStore("quests").getAll()
-        .onsuccess = function(evt){
-          console.log(evt);
-          if(evt.target.result == undefined){
-            console.log("Player info not found");
-            console.log("Player can't login");
+      setTimeout(function(){
+        var db = evt.target.result;
+        if(idb_quests == 0){
+          console.log("There are no quests present on indexedDB");
+          console.log("Player can't login");
+        } else {
+          var checkQuest = db.transaction(['quests'], "readwrite").objectStore("quests").getAll();
+          checkQuest.onsuccess = function(evt){
+            console.log(evt);
+            if(evt.target.result == undefined){
+              console.log("Player info not found");
+              console.log("Player can't login");
+            }
           }
         }
-      }
+      },500)
     }
   }
 }
@@ -373,34 +375,23 @@ checkingPlayerInfo = function(){
     setTimeout(function(){
       var request = db.transaction(['players'], "readonly").objectStore("players").count();
       request.onsuccess = function(evt){
-        db.close();
         if(evt.target.result !== 0){
           console.log("Previous player info found.");
           $(accText).attr("data-type", "register");
+          var requestPlayerInfo = db.transaction(['players'], "readwrite").objectStore("players").getAll();
+          requestPlayerInfo.onsuccess = function(playerInfo){
+            console.log(playerInfo);
+            $(usernameInput).val(playerInfo.target.result[0].player_name);
+            $(passwordInput).val(playerInfo.target.result[0].player_password);
+            var automaticLogin = 1;
+            $(".formButtons").click(formButtons(automaticLogin));
+            db.close();
+          }
           formType(formTitle, usernameInput, passwordInput, formButton, accText);
           setTimeout(function(){
             loginForm.style.visibility = "visible";
             loginForm.style.opacity = 1;
           },1000);
-          // var openIDB = openIDBshortcut();
-          // openIDB.onupgradeneeded = function(evt){
-          //   var db = evt.target.result;
-          //   setTimeout(function(){
-          //     var request = db.transaction(['players'], "readwrite").objectStore("players").getAll();
-          //     request.onsuccess = function(evtPlayer){
-          //       console.log(evtPlayer);
-          //       $(usernameInput).val(evtPlayer.target.result[0].player_name);
-          //       var request = db.transaction(['settings'], "readwrite").objectStore("settings").getAll();
-          //       request.onsuccess = function(evt){
-          //         console.log(evt);
-          //         if(evt.target.result[0].automatic_login == 0){
-          //           $(passwordInput).val(evtPlayer.target.result[0].player_password);
-          //           $(".formButtons").click();
-          //         }
-          //       }
-          //     }
-          //   },500);
-          // }
         } else {
           console.log("Player info not found.");
           $(accText).attr("data-type", "login");
@@ -472,18 +463,6 @@ formType = function(formTitle, usernameInput, passwordInput, formButton, accText
         passwordInput.disabled = false;
         formTitle.innerHTML = "LOGIN";
         changingForm = 0;
-        // var openIDB = openIDBshortcut();
-        // openIDB.onupgradeneeded = function(evt){
-        //   var db = evt.target.result;
-        //   setTimeout(function(){
-        //     var request = db.transaction(['players'], "readonly").objectStore("players").count();
-        //     request.onsuccess = function(evt){
-        //       if(evt.target.result == 1){
-        //         db.close();
-        //       }
-        //     }
-        //   },500)
-        // }
       },1100)
     }
   } else {
@@ -493,19 +472,26 @@ formType = function(formTitle, usernameInput, passwordInput, formButton, accText
 
 function addToInfo(text){
   $("#loginInfo").text(text);
+  $("#loginInfo").css("opacity", "1");
+  setTimeout(function(){
+    $("#loginInfo").css("opacity", "0");
+  },5000)
 }
 
-$(document).ready(function() {
-  $("#accText").click(function(){
-  var formTitle = document.getElementById("formTitle");
-  var usernameInput = document.getElementById("usernameInput");
-  var passwordInput = document.getElementById("passwordInput");
-  var formButton = document.getElementsByClassName("formButtons")[0];
-  var accText = document.getElementById("accText");
-  formType(formTitle, usernameInput, passwordInput, formButton, accText);
-});
-
+$(document).ready(function(){
   $(".formButtons").click(function(){
+    formButtons();
+  });
+  $("#accText").click(function(){
+    var formTitle = document.getElementById("formTitle");
+    var usernameInput = document.getElementById("usernameInput");
+    var passwordInput = document.getElementById("passwordInput");
+    var formButton = document.getElementsByClassName("formButtons")[0];
+    var accText = document.getElementById("accText");
+    formType(formTitle, usernameInput, passwordInput, formButton, accText);
+  });
+
+  formButtons = function(automaticLogin){
     var loginForm = document.getElementById("loginForm");
     var formTitle = document.getElementById("formTitle");
     var usernameInput = document.getElementById("usernameInput");
@@ -514,11 +500,77 @@ $(document).ready(function() {
     var accText = document.getElementById("accText");
     var usernameVal = $(usernameInput).val();
     var passwordVal = $(passwordInput).val();
-    if(/^[a-zA-Z0-9]+$/.test(usernameVal) && usernameVal.length >= 6){
-      if(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]*[\@\#\^\?\!\.\,][a-zA-Z0-9]*$/.test(passwordVal) && passwordVal.length >= 6){
-        var sendingXHR = 0;
+    var sendingXHR = 0;
+
+    console.log(automaticLogin);
+    if(automaticLogin == 1){
+      $("form").submit(function(event){
+        event.preventDefault();
+        if(sendingXHR == 0){
+            console.log("entered");
+            connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "' AND player_password = '" + passwordVal + "'", function (err, result) {
+              if (err) throw err;
+              var playerInfoCountJSON = JSON.stringify(result);
+              console.log(playerInfoCountJSON);
+              var playerInfoCount = JSON.parse(playerInfoCountJSON);
+              console.log(playerInfoCount);
+              if(playerInfoCount.length == 1){
+                connection.query("SELECT * FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
+                  if (err) throw err;
+                  var playerInfoJSON = JSON.stringify(result);
+                  console.log(playerInfoJSON);
+                  var playerInfo = JSON.parse(playerInfoJSON);
+                  console.log(playerInfo);
+                  $(accText).off("click");
+                  accText.style.opacity = 0;
+                  accText.style.visibility = "hidden";
+                  formButton.disabled = true;
+                  usernameInput.disabled = true;
+                  passwordInput.disabled = true;
+                  loginForm.style.opacity = 0;
+                  loginForm.style.visibility = "hidden";
+                  var openIDB = openIDBshortcut();
+                  openIDB.onupgradeneeded = function(evt){
+                    var db = evt.target.result;
+                    setTimeout(function(){
+                      var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
+                      request.onsuccess = function(evt){
+                        console.log(evt);
+                        var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo[0]);
+                        request.onsuccess = function(evt){
+                          console.log(evt);
+                          console.log("Player info added!");
+                          db.close();
+                          goToHome();
+                        }
+                        request.onerror = function(evt){
+                          db.close();
+                          console.log(evt);
+                          if(evt.target.error.message == "Key already exists in the object store."){
+                            goToHome();
+                          } else {
+                            throw new Error("Something wrong happened when trying to login, report to me!");
+                          }
+                        }
+                      }
+                    },500);
+                  }
+                });
+              } else if(playerInfoCount.length == 0){
+                addToInfo("Username or password wrong");
+              }
+            });
+        } else {
+          console.log("Too soon, slow down!")
+        }
+      })
+      $("form").submit();
+
+    } else {
+
+      if(/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(passwordVal) && usernameVal.length >= 6){
         console.log($(this).attr("name"));
-        if($(this).attr("name") == "Register"){
+        if($("input#Register").attr("name") == "Register"){
           $("form").submit(function(event){
             event.preventDefault();
             if(sendingXHR == 0){
@@ -533,7 +585,6 @@ $(document).ready(function() {
                   if(playerCount.length == 0){
                     connection.query("INSERT INTO players(player_name, player_password) VALUES('" + usernameVal + "', MD5('" + passwordVal + "'))", function (err, result){
                       if (err) throw err;
-
                       $(accText).off("click");
                       accText.style.opacity = 0;
                       accText.style.visibility = "hidden";
@@ -556,27 +607,11 @@ $(document).ready(function() {
             }
           })
           $("form").submit();
-        } else if($(this).attr("name") == "Login"){
+        } else if($("input#Login").attr("name") == "Login"){
           $("form").submit(function(event){
             event.preventDefault();
             if(sendingXHR == 0){
               if($("input#Login").attr("name") == "Login"){
-                // var needMD5;
-                // var openIDB = openIDBshortcut();
-                // openIDB.onupgradeneeded = function(evt){
-                //   var db = evt.target.result;
-                //   setTimeout(function(){
-                //     var request = db.transaction(['settings'], "readwrite").objectStore("settings").getAll();
-                //     request.onsuccess = function(evt){
-                //       console.log(evt);
-                //       if(evt.target.result[0].automatic_login == 0){
-                //         needMD5 = "player_password = ('" + passwordVal + "'";
-                //       } else {
-                //         needMD5 = "player_password = MD5('" + passwordVal + "')";
-                //       }
-                //     }
-                //   },500);
-                // }
                 connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "' AND player_password = MD5('" + passwordVal + "')", function (err, result) {
                   if (err) throw err;
                   var playerInfoCountJSON = JSON.stringify(result);
@@ -636,17 +671,14 @@ $(document).ready(function() {
           })
           $("form").submit();
         } else {
-            throw new Error("Something wrong happened when trying to login or register, report to me!");
-          }
+          throw new Error("Something wrong happened when trying to login or register, report to me!");
+        }
       } else {
-        console.log("Password should contain at least six characters, one number and one special character.");
-        addToInfo("Password should contain at least six characters, one number and one special character.");
+        console.log("Password should contain at least eight characters, one lower and uppercase letter.");
+        addToInfo("Password should contain at least eight characters, one lower and uppercase letter.");
       }
-    } else {
-      console.log("Username should contain at least six characters.");
-      addToInfo("Username should contain at least six characters.");
     }
-  });
+  }
 });
 
 
@@ -655,7 +687,7 @@ checkGameDownloadStatus = function(){
   console.log("checking");
   const fs = require('fs');
   var child = require('child_process');
-  var exePath = 'package/WindowsNoEditor/SimpleUnrealExample.exe';
+  var exePath = 'gameFiles/package/WindowsNoEditor/SimpleUnrealExample.exe';
   var zipPath = 'package.zip';
   if(fs.existsSync(exePath)){
     //file exists

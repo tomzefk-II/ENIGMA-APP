@@ -7,9 +7,12 @@ var path = require('path')
 const { app, BrowserWindow } = require('electron')
 const express = require("express")
 //
+let winIndex;
+let winLogin;
+let winHome;
 
 function startLoadingApp() {
-  const winLoading = new BrowserWindow({
+  winIndex = new BrowserWindow({
     width: 400,
     height: 400,
     frame: false,
@@ -20,7 +23,11 @@ function startLoadingApp() {
     }
   })
 
-  winLoading.loadFile('index.html')
+  winIndex.loadFile('index.html')
+
+  winIndex.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
 }
 
 app.whenReady().then(startLoadingApp)
@@ -41,13 +48,30 @@ ipcMain.on('app_version', (event) => {
   event.sender.send('app_version', { version: app.getVersion() });
 });
 
+autoUpdater.on('error', (evt) => {
+  winIndex.webContents.send('error');
+});
+
+autoUpdater.on('update-available', () => {
+  winIndex.webContents.send('update_available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+  winIndex.webContents.send('update_downloaded');
+});
+
+autoUpdater.on('update-not-available', () => {
+  winIndex.webContents.send('update_not_available');
+});
+
+
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
 });
 
+
 ipcMain.on('open_login', (evt) => {
-  console.log(evt);
-  const winLoading = new BrowserWindow({
+  winLogin = new BrowserWindow({
     width: 500,
     height: 720,
     frame: false,
@@ -58,12 +82,11 @@ ipcMain.on('open_login', (evt) => {
     }
   })
 
-  winLoading.loadFile('login.html')
+  winLogin.loadFile('login.html')
 });
 
-let winApp;
 ipcMain.on('open_home', (evt) => {
-  winApp = new BrowserWindow({
+  winHome = new BrowserWindow({
     width: 1280,
     height: 720,
     frame: false,
@@ -75,26 +98,9 @@ ipcMain.on('open_home', (evt) => {
       webSecurity: false,
     }
   });
-  winApp.loadFile('home.html')
-
-  winApp.once('ready-to-show', () => {
-    autoUpdater.checkForUpdatesAndNotify();
-  });
+  winHome.loadFile('home.html')
 });
 
 ipcMain.on('signOut', (evt) => {
   startLoadingApp();
 })
-
-autoUpdater.on('error', (error) => {
-  console.log(error);
-  winApp.webContents.send('error');
-});
-
-autoUpdater.on('update-available', () => {
-  winApp.webContents.send('update_available');
-});
-
-autoUpdater.on('update-downloaded', () => {
-  winApp.webContents.send('update_downloaded');
-});

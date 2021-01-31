@@ -372,31 +372,9 @@
     const message = $("#notification h3");
     const restartButton = document.getElementById('restart-button');
 
-    ipcRenderer.on('update_available', () => {
-      console.log("update available");
-      ipcRenderer.removeAllListeners('update_available');
-      message.innerText = 'Downloading update';
-      $(notification).css("opacity", "1");
-      $(notification).css("visibility", "visible");
-    });
 
-    ipcRenderer.on('update_downloaded', () => {
-      console.log("update downloaded");
-      ipcRenderer.removeAllListeners('update_downloaded');
-      message.innerText = 'Update ready.';
-      $(notification).css("opacity", "1");
-      $(notification).css("visibility", "visible");
-    });
 
-    ipcRenderer.on('error', (error) => {
-      console.log(error);
-    });
-
-    function restartApp() {
-      ipcRenderer.send('restart_app');
-    }
-
-    // const version = document.getElementById('version');
+    const version = document.getElementById('version');
 
     ipcRenderer.send('app_version');
     ipcRenderer.on('app_version', (event, arg) => {

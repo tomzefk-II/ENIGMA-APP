@@ -41,19 +41,44 @@
 
   var mysql = require('mysql');
 
+  ipcRenderer.on('update_available', () => {
+    console.log("update available");
+    ipcRenderer.removeAllListeners('update_available');
+  });
+
+  ipcRenderer.on('update_downloaded', () => {
+    console.log("update downloaded");
+    ipcRenderer.removeAllListeners('update_downloaded');
+  });
+
+  ipcRenderer.on('update_not_available', () => {
+    console.log("update not available");
+    ipcRenderer.removeAllListeners('update_not_available');
+  });
+
+  ipcRenderer.on('error', (evt) => {
+    console.log(evt);
+    ipcRenderer.removeAllListeners('error');
+  });
+
+  function restartApp() {
+    ipcRenderer.send('restart_app');
+  }
+
   $(document).ready(function(){
-    initPWA();
+    // checkUpdates();
+    // initPWA();
   })
 
-  goToNewWindow = function(){
-    setTimeout(function(){
-      const { ipcRenderer } = require('electron');
-      ipcRenderer.send('open_login')
-      setTimeout(function(){
-        window.close();
-      },500)
-    },1500)
-  }
+  // goToNewWindow = function(){
+  //   setTimeout(function(){
+  //     const { ipcRenderer } = require('electron');
+  //     ipcRenderer.send('open_login')
+  //     setTimeout(function(){
+  //       window.close();
+  //     },500)
+  //   },1500)
+  // }
 
   </script>
 </body>

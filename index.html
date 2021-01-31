@@ -41,6 +41,11 @@
 
   var mysql = require('mysql');
 
+  ipcRenderer.send('app_version');
+  ipcRenderer.on('app_version', (event, arg) => {
+    console.log("v" + arg.version)
+  });
+
   ipcRenderer.on('update_available', () => {
     console.log("update available");
     ipcRenderer.removeAllListeners('update_available');
@@ -56,8 +61,8 @@
     ipcRenderer.removeAllListeners('update_not_available');
   });
 
-  ipcRenderer.on('error', (evt) => {
-    console.log(evt);
+  ipcRenderer.on('error', () => {
+    console.log("error");
     ipcRenderer.removeAllListeners('error');
   });
 

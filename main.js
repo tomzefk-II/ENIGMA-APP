@@ -1,11 +1,5 @@
-const electron = require('electron')
 const { autoUpdater } = require('electron-updater')
-// Module to control application life.
-const appElectron = electron.app
-const {ipcMain} = require('electron')
-var path = require('path')
-const { app, BrowserWindow } = require('electron')
-const express = require("express")
+const { electron, app, BrowserWindow, ipcMain } = require('electron')
 //
 let winIndex;
 let winLogin;
@@ -49,18 +43,26 @@ ipcMain.on('app_version', (event) => {
 });
 
 autoUpdater.on('error', (evt) => {
+  console.log("error");
+  console.log(evt);
   winIndex.webContents.send('error');
 });
 
-autoUpdater.on('update-available', () => {
+autoUpdater.on('update-available', (evt) => {
+  console.log("update available");
+  console.log(evt);
   winIndex.webContents.send('update_available');
 });
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', (evt) => {
+  console.log("update downloaded");
+  console.log(evt);
   winIndex.webContents.send('update_downloaded');
 });
 
-autoUpdater.on('update-not-available', () => {
+autoUpdater.on('update-not-available', (evt) => {
+  console.log("update not available");
+  console.log(evt);
   winIndex.webContents.send('update_not_available');
 });
 

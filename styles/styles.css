@@ -129,40 +129,6 @@ input.loginInputs {
   /* END home.html WINDOW CONTROLS */
 
 
-  /* UPDATE NOTIFICATION */
-
-  #notification {
-    transform: translate(0%, -100%);
-    padding: 10px;
-    position: fixed;
-    top: 100%;
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.5s;
-  }
-
-  #notification h3 {
-    float: left;
-    color: #dbdbdb;
-  }
-
-  #restart-button {
-    float: right;
-    margin: 3px 10px;
-    opacity: 0;
-    visibility: hidden;
-    color: #dbdbdb;
-    transition: 0.5s;
-  }
-
-  #restart-button:hover {
-    color: #fff;
-    cursor: pointer;
-  }
-
-  /* END UPDATE NOTIFICATION */
-
-
   /* PLAY GAME WRAPPER */
 
   #playgame-wrapper {

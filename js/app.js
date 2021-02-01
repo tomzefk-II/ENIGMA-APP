@@ -11,10 +11,6 @@ let ObjectStores = [
     OSIndex: ["player_id", "player_name", "player_isBetaTester", "player_level"]
   },
   {
-    OSName: "quests",
-    OSIndex: ["quest_id", "quest_name", "quest_minLevel"]
-  },
-  {
     OSName: "settings",
     OSIndex: ["setting_id", "theme"]
   }
@@ -50,8 +46,8 @@ initLoadingBarValue = function(value){
   }
 }
 
+const dbName = "enigma_db";
 openIDBshortcut = function(){
-  const dbName = "enigma_db";
   let dbV;
   if(localStorage.hasOwnProperty('IDBV') == false){
     var setdbV = localStorage.setItem('IDBV', 0);
@@ -66,27 +62,6 @@ openIDBshortcut = function(){
   localStorage.setItem("IDBV", dbV);
   return openIDB;
 }
-
-questsStoredIDB = function(init){
-  var openIDB = openIDBshortcut();
-  var idb_quests = [];
-  openIDB.onupgradeneeded = function(evt) {
-    var db = evt.target.result;
-    setTimeout(function(){
-      var request = db.transaction(['quests'], "readonly").objectStore("quests").count();
-      request.onsuccess = function(evt){
-        console.log(evt);
-        db.close();
-        if(request.result == 0){
-          idb_quests.push(request.result);
-        } else {
-          idb_quests.push(request.result);
-        }
-      }
-    },10)
-  }
-  return idb_quests;
-};
 
 initPWA = function(){
   initLoadingBarValue(25);
@@ -146,7 +121,7 @@ initPWA = function(){
       if(errors == 0){
         db.close();
         console.log("%cCheckup completed!", "color:lime");
-        startApp();
+        checkSettings();
       } else {
         db.close();
         console.warn("Errors found during checkup!");
@@ -157,143 +132,6 @@ initPWA = function(){
         console.log("%cDatabase deleted!", "color:orange;");
         initPWA();
       }
-    }
-  }
-}
-
-function startApp(){
-  initLoadingBarValue(40);
-  console.log("STARTING APP");
-  if(navigator.onLine){
-    console.group("Getting quests from indexedDB");
-    var idb_quests = questsStoredIDB(true);
-    console.log(idb_quests);
-    console.groupEnd();
-    console.group("Getting quests from MySQL database");
-    connection.connect(function(err) {
-      if(err){
-        console.log("Disconnected!");
-        throw err;
-      }
-      console.log("Connected!");
-      connection.query("SELECT * FROM quests", function (err, result) {
-        if (err) throw err;
-        var questsJSON = JSON.stringify(result);
-        var quests = JSON.parse(questsJSON);
-        console.log(quests);
-
-        var idb_quests = questsStoredIDB(true);
-        var openIDB = openIDBshortcut();
-        openIDB.onupgradeneeded = function(evt) {
-          var db = evt.target.result;
-          if(idb_quests == 0){
-            console.group("Adding received quests to indexedDB");
-              setTimeout(function(){
-                for(i=0; i < quests.length; i++){
-                  console.groupCollapsed(quests[i].quest_name);
-                  var addQuest = db.transaction(['quests'], "readwrite").objectStore("quests").add(quests[i]);
-                  console.log(addQuest);
-                  addQuest.oncomplete = function(evt){
-                    console.log(evt);
-                    console.warn(addQuest.error.message);
-                    console.warn(addQuest);
-                  }
-                  console.groupEnd();
-                }
-                console.log("%cQuests added!", "color: lime");
-                setTimeout(function(){
-                  console.log("%cApplying changes", "color: orange");
-                  initLoadingBarValue("reloading");
-                  db.close();
-                  console.log("Reloading PWA...");
-                  setTimeout(function(){
-                    location.reload();
-                  },2000);
-                },10);
-                console.groupEnd();
-              },10)
-          } else {
-            console.group("Checking current quests");
-            var lastQuest = quests.length - 1;
-            var missingQuests = 0;
-            var percentageValue = parseInt(loadingBarPercentage.innerHTML.slice(0, -1));
-            var percentageQuests = 20 / quests.length;
-            console.log(percentageQuests);
-            setTimeout(function(){
-              quests.forEach(checkQuestFunc);
-              function checkQuestFunc(index, item){
-                console.groupCollapsed(index.quest_name);
-                console.log(index);
-                console.log(item);
-                var checkQuest = db.transaction(['quests'], "readwrite").objectStore("quests").get(index.quest_id);
-                checkQuest.onsuccess = function(evt){
-                  if(evt.target.result == undefined){
-                    console.groupCollapsed("Missing quest!");
-                    missingQuests++;
-                    console.log(evt);
-                    console.log(index);
-                    var addMissingQuest = db.transaction(['quests'], "readwrite").objectStore("quests").add(index);
-                    addMissingQuest.onsuccess = function(){
-                      console.log("Missing quest added!");
-                      initLoadingBarValue(percentageValue + percentageQuests);
-                      percentageValue += percentageQuests;
-                    }
-                    console.groupEnd();
-                  } else {
-                    initLoadingBarValue(percentageValue + percentageQuests);
-                    percentageValue += percentageQuests;
-                  }
-                }
-                console.groupEnd();
-                if(item == lastQuest){
-                  setTimeout(function(){
-                    if(missingQuests > 0){
-                      setTimeout(function(){
-                        console.log("%cApplying changes", "color: orange");
-                        initLoadingBarValue("reloading");
-                        db.close();
-                        console.log("Reloading PWA...");
-                        setTimeout(function(){
-                          location.reload();
-                        },2000);
-                      },10);
-                    } else {
-                      console.log("%cQuests checked!", "color: lime");
-                      db.close();
-                      checkSettings();
-                    }
-                  },1000)
-                }
-              }
-              console.groupEnd();
-            },10);
-          }
-        }
-      });
-    });
-  } else {
-    // Player Offline \\
-    console.group("Getting quests from indexedDB");
-    var idb_quests = questsStoredIDB(true);
-    console.log(idb_quests);
-    var openIDB = openIDBshortcut();
-    openIDB.onupgradeneeded = function(evt) {
-      setTimeout(function(){
-        var db = evt.target.result;
-        if(idb_quests == 0){
-          console.log("There are no quests present on indexedDB");
-          console.log("Player can't login");
-        } else {
-          var checkQuest = db.transaction(['quests'], "readwrite").objectStore("quests").getAll();
-          checkQuest.onsuccess = function(evt){
-            console.log(evt);
-            if(evt.target.result == undefined){
-              console.log("Player info not found");
-              console.log("Player can't login");
-            }
-          }
-        }
-      },500)
     }
   }
 }
@@ -718,6 +556,9 @@ checkGameDownloadStatus = function(){
       fs.unlink('package.zip', (err) => {
       if (err) throw err;
         console.log('package.zip' + ' was deleted');
+        $("#playgame-btn h4").text("DOWNLOAD");
+        $("#playgame-btn").css("opacity", "1");
+        $("#playgame-btn").css("visibility", "visible");
       });
     });
 

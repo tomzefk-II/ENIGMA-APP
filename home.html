@@ -105,13 +105,6 @@
     </div>
   </div>
 
-
-
-  <div id="notification">
-    <h3>Update available.</h3>
-    <p id="restart-button" onClick="restartApp()">Restart</p>
-  </div>
-
   <script>
 
     const { BrowserWindow } = require('electron').remote;
@@ -150,7 +143,7 @@
             {
               text:
               {
-                error: "Couln't start Bridge",
+                error: "Couldn't start Bridge",
                 disabled: "Bridge is disabled"
               },
               path: "M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
@@ -186,7 +179,26 @@
     };
 
 
+    let playerinfo = {
+      player_id: undefined,
+      player_name: undefined,
+      player_level: undefined
+    };
     $(document).ready(function(){
+
+      var openIDB = openIDBshortcut();
+      openIDB.onupgradeneeded = function(evt) {
+        var db = evt.target.result;
+        setTimeout(function(){
+          var request = db.transaction(['players'], "readonly").objectStore("players").getAll();
+          request.onsuccess = function(evt){
+            console.log(evt);
+            playerinfo.player_id = evt.target.result[0].player_id.toString();
+            playerinfo.player_name = evt.target.result[0].player_name;
+            playerinfo.player_level = evt.target.result[0].player_level.toString();
+          }
+        },500)
+      }
 
       setTimeout(function(){
         document.getElementById("dimmer").style.backgroundColor = "rgba(0,0,0,0)";
@@ -368,11 +380,6 @@
       });
     })
 
-    const notification = $("#notification");
-    const message = $("#notification h3");
-    const restartButton = document.getElementById('restart-button');
-
-
 
     const version = document.getElementById('version');
 
@@ -504,9 +511,9 @@
     const osc = require("osc")
     const https = require("https")
     const fs = require("fs")
-    var server;
-    var wss;
-    var socketPort;
+    let server;
+    let wss;
+    let socketPort;
 
     toggleBridge = function(){
       var setting = $("#setting-bridge-connection .setting-toggle path");
@@ -514,29 +521,16 @@
       if($(setting).attr("d") == connections.bridge.status.activated.path){
         console.log("Bridge disabled");
         $(setting).attr("d", connections.bridge.status.disabled.path);
-        updateConnectionStatus("bridge-connection", "errorConnection", "disabled");
-        server.getConnections(function(connections){
-          console.log(connections);
-        })
-        console.log(wss.clients);
-        wss.close();
-        server.close();
-        wss.on("close", function(){
-          console.log("wss closed");
-        })
-        server.on("close", function(){
-          console.log("server closed");
-        })
+        serverClose();
         setTimeout(function(){
           var wss;
           var server;
           var socketPort;
         },500)
-        // code
       } else {
         var server = https.createServer({
-          cert: fs.readFileSync('resources/cert/cert.pem'),
-          key: fs.readFileSync('resources/cert/key.pem')
+          cert: fs.readFileSync('/resources/cert/cert.pem'), // /resources/
+          key: fs.readFileSync('/resources/cert/key.pem')
         });
         var wss = new WebSocket.Server({ server });
         wss.on("connection", function (socket) {
@@ -545,14 +539,55 @@
               metadata: true
           });
           console.log("Connection received");
+          updateConnectionStatus("bridge-connection", "goodConnection", null);
           socketPort.on("message", function (oscMsg) {
-            console.log("An OSC Message was received!", oscMsg);
+            console.log("An OSC Message was received!");
+            console.log(oscMsg);
+            if(oscMsg.address == "/playerInfo"){
+              let receivedPlayerInfo = JSON.parse(oscMsg.args[0].value);
+              console.log("Received: " + receivedPlayerInfo);
+              console.log("Current: " + playerinfo);
+              if(receivedPlayerInfo.player_id !== playerinfo.player_id){
+                var reason = "Connected client has not the same player ID!";
+                var errorCode = 4001;
+                console.log(reason);
+                for(const client of wss.clients){
+                  client.close(errorCode, reason);
+                  console.log("Client Kicked!");
+                }
+              } else {
+                console.log("Same player id");
+              }
+            } else if(oscMsg.address == "/pwaVersion"){
+              var currentVersion = version.innerText;
+              var receivedVersion = oscMsg.args[0].value;
+              console.log("Received: " + receivedVersion);
+              console.log("Current: " + currentVersion);
+              if(receivedVersion !== currentVersion) {
+                var reason = "Connected client has not the same app version!";
+                var errorCode = 4002;
+                console.log(reason);
+                for(const client of wss.clients){
+                  client.close(errorCode, reason);
+                  console.log("Client Kicked!");
+                }
+              } else {
+                console.log("Same app version");
+              }
+            }
+
           });
+
+          socketPort.on("close", function(socket){
+            console.log("Client disconnected");
+            updateConnectionStatus("bridge-connection", "warningConnection", null);
+            //
+          })
         });
 
         console.log("Bridge activated");
         server.listen(9010);
-        // server.maxConnections = 1;
+        server.maxConnections = 1;
 
         // Listen for Web Socket connections.
         wss.on("listening", function () {
@@ -560,6 +595,28 @@
           $(setting).attr("d", connections.bridge.status.activated.path);
           updateConnectionStatus("bridge-connection", "warningConnection", null);
         });
+
+        serverClose = function(){
+          console.log(wss.clients);
+          var reason = "Server is closing!";
+          var errorCode = 4000;
+          console.log(reason);
+          for(const client of wss.clients){
+            client.close(errorCode, reason);
+            console.log("Client Kicked!");
+          }
+          wss.close();
+          server.close();
+          wss.on("close", function(){
+            console.log("wss closed");
+          })
+          server.on("close", function(){
+            console.log("server closed");
+          })
+          setTimeout(function(){
+            updateConnectionStatus("bridge-connection", "errorConnection", "disabled");
+          },500)
+        }
       }
     }
 
@@ -568,8 +625,8 @@
       // const http = require('http');
       console.log("Turning on configuration server");
       const options = {
-        key: fs.readFileSync('resources/cert/key.pem'),
-        cert: fs.readFileSync('resources/cert/cert.pem')
+        key: fs.readFileSync('/resources/cert/key.pem'), // /resources/
+        cert: fs.readFileSync('/resources/cert/cert.pem')
       };
       https.createServer(options, function (req, res) {
         console.log("Server created");

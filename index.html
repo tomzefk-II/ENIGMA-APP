@@ -32,14 +32,9 @@
 </div>
 <script src="js/app.js"></script>
   <script>
-  // var intro = document.getElementById("intro");
-  // intro.onended = function(){
-  //   setTimeout(function(){
-  //     window.close();
-  //   },1000)
-  // };
 
   var mysql = require('mysql');
+  let canRestart = 0;
 
   ipcRenderer.send('app_version');
   ipcRenderer.on('app_version', (event, arg) => {
@@ -49,14 +44,24 @@
   ipcRenderer.on('update_available', () => {
     console.log("An update is available");
     ipcRenderer.removeAllListeners('update_available');
+    console.log("Preparing for update...");
+    localStorage.clear();
+    var deleteIDB = indexedDB.deleteDatabase(dbName);
+    deleteIDB.onsuccess = function(){
+      canRestart = 1;
+    }
   });
 
   ipcRenderer.on('update_downloaded', () => {
     console.log("The update has been downloaded");
     ipcRenderer.removeAllListeners('update_downloaded');
     console.log("Restarting");
-    setTimeout(function(){
-      ipcRenderer.send('restart_app');
+    var restartInterval = setInterval(function(){
+      if(canRestart = 1){
+        ipcRenderer.send('restart_app');
+      } else {
+        console.log("Not ready to restart yet");
+      }
     },1000);
   });
 

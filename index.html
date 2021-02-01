@@ -47,43 +47,39 @@
   });
 
   ipcRenderer.on('update_available', () => {
-    console.log("update available");
+    console.log("An update is available");
     ipcRenderer.removeAllListeners('update_available');
   });
 
   ipcRenderer.on('update_downloaded', () => {
-    console.log("update downloaded");
+    console.log("The update has been downloaded");
     ipcRenderer.removeAllListeners('update_downloaded');
+    console.log("Restarting");
+    setTimeout(function(){
+      ipcRenderer.send('restart_app');
+    },1000);
   });
 
   ipcRenderer.on('update_not_available', () => {
-    console.log("update not available");
+    console.log("Update not available, proceeding with startup");
     ipcRenderer.removeAllListeners('update_not_available');
+    initPWA();
   });
 
   ipcRenderer.on('error', () => {
-    console.log("error");
+    console.log("An error has happened");
     ipcRenderer.removeAllListeners('error');
   });
 
-  function restartApp() {
-    ipcRenderer.send('restart_app');
+  goToNewWindow = function(){
+    setTimeout(function(){
+      const { ipcRenderer } = require('electron');
+      ipcRenderer.send('open_login')
+      setTimeout(function(){
+        window.close();
+      },500)
+    },1500)
   }
-
-  $(document).ready(function(){
-    // checkUpdates();
-    // initPWA();
-  })
-
-  // goToNewWindow = function(){
-  //   setTimeout(function(){
-  //     const { ipcRenderer } = require('electron');
-  //     ipcRenderer.send('open_login')
-  //     setTimeout(function(){
-  //       window.close();
-  //     },500)
-  //   },1500)
-  // }
 
   </script>
 </body>

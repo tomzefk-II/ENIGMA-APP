@@ -43,26 +43,18 @@ ipcMain.on('app_version', (event) => {
 });
 
 autoUpdater.on('error', (evt) => {
-  console.log("error");
-  console.log(evt);
   winIndex.webContents.send('error');
 });
 
 autoUpdater.on('update-available', (evt) => {
-  console.log("update available");
-  console.log(evt);
   winIndex.webContents.send('update_available');
 });
 
 autoUpdater.on('update-downloaded', (evt) => {
-  console.log("update downloaded");
-  console.log(evt);
   winIndex.webContents.send('update_downloaded');
 });
 
 autoUpdater.on('update-not-available', (evt) => {
-  console.log("update not available");
-  console.log(evt);
   winIndex.webContents.send('update_not_available');
 });
 

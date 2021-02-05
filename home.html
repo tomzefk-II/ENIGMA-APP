@@ -392,8 +392,6 @@
 
 
     // const ws = require('ws')
-    // const dgram = require('dgram')
-    // const OSC = require('osc-js')
     // const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
     // osc.open({ host: "192.168.1.85", port: 9010, secure: true });
     // osc.on('open', () => {
@@ -404,13 +402,7 @@
     //   console.log(message.args[0]);
     //   console.log(parseFloat(message.args[0]));
     //
-    //   const oscUDP = new OSC({ plugin: new OSC.DatagramPlugin() })
-    //   oscUDP.open({ port: 9011 })
-    //   oscUDP.on('open', () => {
-    //     const socket = dgram.createSocket('udp4')
-    //     console.log(parseFloat(message.args[0]));
-    //     oscUDP.send(new OSC.Message('/SendToUE4', message.args[0]), { port: 9005 })
-    //   })
+
     // })
 
     const { networkInterfaces } = require('os');
@@ -514,6 +506,10 @@
     let server;
     let wss;
     let socketPort;
+    let sameID = false;
+    let sameVersion = false;
+    let isUnrealConnectionReady = false;
+    let isPWAConnectionReady = false;
 
     toggleBridge = function(){
       var setting = $("#setting-bridge-connection .setting-toggle path");
@@ -536,18 +532,31 @@
         wss.on("connection", function (socket) {
           var socketPort = new osc.WebSocketPort({
               socket: socket,
-              metadata: true
+              metadata: false
           });
+
+          console.log(socket._socket.remoteAddress);
+          console.log(socket._socket.remotePort);
+          // sendPlayerPosToPWA = function(){
+          //   // for(const client of wss.clients){
+          //   //   console.log(client);
+          //   // }
+          //   console.log(socketPort);
+          //   console.log(socket);
+          // }
           console.log("Connection received");
           updateConnectionStatus("bridge-connection", "goodConnection", null);
           socketPort.on("message", function (oscMsg) {
             console.log("An OSC Message was received!");
             console.log(oscMsg);
             if(oscMsg.address == "/playerInfo"){
-              let receivedPlayerInfo = JSON.parse(oscMsg.args[0].value);
-              console.log("Received: " + receivedPlayerInfo);
-              console.log("Current: " + playerinfo);
+              let receivedPlayerInfo = JSON.parse(oscMsg.args[0]);
+              console.log("Received:");
+              console.log(receivedPlayerInfo);
+              console.log("Current:");
+              console.log(playerinfo);
               if(receivedPlayerInfo.player_id !== playerinfo.player_id){
+                sameID = false;
                 var reason = "Connected client has not the same player ID!";
                 var errorCode = 4001;
                 console.log(reason);
@@ -557,13 +566,15 @@
                 }
               } else {
                 console.log("Same player id");
+                sameID = true;
               }
             } else if(oscMsg.address == "/pwaVersion"){
               var currentVersion = version.innerText;
-              var receivedVersion = oscMsg.args[0].value;
+              var receivedVersion = oscMsg.args[0];
               console.log("Received: " + receivedVersion);
               console.log("Current: " + currentVersion);
               if(receivedVersion !== currentVersion) {
+                sameVersion = false;
                 var reason = "Connected client has not the same app version!";
                 var errorCode = 4002;
                 console.log(reason);
@@ -573,12 +584,52 @@
                 }
               } else {
                 console.log("Same app version");
+                sameVersion = true;
               }
             }
-
+            if(sameID == true && sameVersion == true){
+              isPWAConnectionReady = true;
+              console.log("A Bridge connection to PWA was successfully made!");
+              console.log("Trying to open UDP Server for Unreal to connect");
+              var udpPort = new osc.UDPPort({
+                  localAddress: "127.0.0.1",
+                  localPort: 9008
+              });
+              udpPort.open();
+              udpPort.on("open", function(){
+                console.log("Opened connection to Unreal");
+                console.log("Waiting for Unreal to connect...");
+              })
+              udpPort.on("message", function(event){
+                console.log(event);
+                if(event.address == "/SendToBridge/playerPos"){
+                  console.log("Received: " + event.args[0]);
+                  console.log("Sending player position to PWA!");
+                  socketPort.send({
+                      address: "/SendFromBridge/UnrealPlayerPos",
+                      args: [event.args[0]]
+                  }, socket._socket.remoteAddress, socket._socket.remotePort);
+                } else if(event.address == "/SendToBridge/connection"){
+                  var messageFromUnreal = event.args[0];
+                  console.log("Received: " + messageFromUnreal);
+                  if(messageFromUnreal == "Ready"){
+                    console.log("A connection between Unreal and Bridge has been established!");
+                    isUnrealConnectionReady = true;
+                    socketPort.send({
+                        address: "/SendFromBridge/UnrealConnection",
+                        args: [messageFromUnreal]
+                    }, socket._socket.remoteAddress, socket._socket.remotePort);
+                  };
+                }
+              })
+            }
           });
 
           socketPort.on("close", function(socket){
+            sameID = false;
+            sameVersion = false;
+            isPWAConnectionReady = false;
+            isUnrealConnectionReady = false;
             console.log("Client disconnected");
             updateConnectionStatus("bridge-connection", "warningConnection", null);
             //
@@ -628,14 +679,28 @@
         key: fs.readFileSync('/resources/cert/key.pem'), // /resources/
         cert: fs.readFileSync('/resources/cert/cert.pem')
       };
-      https.createServer(options, function (req, res) {
+      var configurationServer = https.createServer(options, function (req, res) {
         console.log("Server created");
         res.writeHead(301, {Location: 'https://enigma.tomzefk.dev/configurationCompleted.html'});
         res.end("boas");
         // res.writeHead(200);
         // res.end("hello world");
       }).listen(9009);
+      configurationServer.maxConnections = 1;
+      configurationServer.on("connection", function(socket){
+        console.log(socket);
+        setTimeout(function(){
+          configurationServer.close(function(){console.log('Server closed!')});
+          socket.destroy();
+        },5000);
+      })
     }
+
+    // const dgram = require('dgram')
+    // const OSC = require('osc-js')
+    // const socket = dgram.createSocket('udp4')
+    // const oscUDP = new OSC({ plugin: new OSC.DatagramPlugin() })
+
 
   </script>
 </body>

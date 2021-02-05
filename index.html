@@ -41,6 +41,8 @@
     console.log("v" + arg.version)
   });
 
+  initLoadingBarValue("checkingUpdates");
+
   ipcRenderer.on('update_available', () => {
     console.log("An update is available");
     ipcRenderer.removeAllListeners('update_available');

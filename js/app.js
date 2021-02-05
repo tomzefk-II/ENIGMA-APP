@@ -37,8 +37,13 @@ initLoadingBarValue = function(value){
       loadingBar.style.width = "90%";
       loadingBar.style.borderColor = "orange";
       loadingBarPercentage.innerHTML = "Reloading PWA!";
+    } else if(value == "checkingUpdates"){
+      loadingBar.style.width = "90%";
+      loadingBar.style.borderColor = "orange";
+      loadingBarPercentage.innerHTML = "Checking for updates..."
     } else {
       var value = Math.round(value);
+      loadingBar.style.borderColor = "#dbdbdb";
       loadingBar.style.width = (value - 9) + "%";
       loadingBarPercentage.innerHTML = value + "%";
       console.log(loadingBarPercentage.innerHTML.slice(0, -1));

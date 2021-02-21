@@ -30,21 +30,21 @@ initLoadingBarValue = function(value){
   if(error !== 1){
     if(value == "error"){
       error = 1;
-      loadingBar.style.width = "90%";
+      loadingBar.style.width = "100%";
       loadingBar.style.borderColor = "red";
-      loadingBarPercentage.innerHTML = "An error occurred!";
+      loadingBarPercentage.innerHTML = "An error occurred! Report to me!";
     } else if(value == "reloading"){
-      loadingBar.style.width = "90%";
+      loadingBar.style.width = "100%";
       loadingBar.style.borderColor = "orange";
       loadingBarPercentage.innerHTML = "Reloading PWA!";
     } else if(value == "checkingUpdates"){
-      loadingBar.style.width = "90%";
+      loadingBar.style.width = "100%";
       loadingBar.style.borderColor = "orange";
       loadingBarPercentage.innerHTML = "Checking for updates..."
     } else {
       var value = Math.round(value);
       loadingBar.style.borderColor = "#dbdbdb";
-      loadingBar.style.width = (value - 9) + "%";
+      loadingBar.style.width = value + "%";
       loadingBarPercentage.innerHTML = value + "%";
       console.log(loadingBarPercentage.innerHTML.slice(0, -1));
     }
@@ -204,14 +204,7 @@ checkingPlayerInfo = function(){
   var passwordInput = document.getElementById("passwordInput");
   var formButton = document.getElementsByClassName("formButtons")[0];
   var accText = document.getElementById("accText");
-  formTitle.style.opacity = 0;
-  formTitle.style.transition = "1s";
-  formButton.style.visibility = "hidden";
-  formButton.style.opacity = 0;
-  formButton.style.transition = "1s";
-  accText.style.visibility = "hidden";
-  accText.style.opacity = 0;
-  accText.style.transition = "1s";
+
   var openIDB = openIDBshortcut();
   openIDB.onupgradeneeded = function(evt){
     var db = evt.target.result;
@@ -227,21 +220,22 @@ checkingPlayerInfo = function(){
             $(usernameInput).val(playerInfo.target.result[0].player_name);
             $(passwordInput).val(playerInfo.target.result[0].player_password);
             var automaticLogin = 1;
-            $(".formButtons").click(formButtons(automaticLogin));
+            $(".submitForm").click(formButtons(automaticLogin));
             db.close();
           }
-          formType(formTitle, usernameInput, passwordInput, formButton, accText);
           setTimeout(function(){
             loginForm.style.visibility = "visible";
             loginForm.style.opacity = 1;
-          },1000);
+            formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
+          },1000)
         } else {
+          db.close();
           console.log("Player info not found.");
           $(accText).attr("data-type", "login");
-          formType(formTitle, usernameInput, passwordInput, formButton, accText);
           setTimeout(function(){
             loginForm.style.visibility = "visible";
             loginForm.style.opacity = 1;
+            formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
           },1000);
         }
       }
@@ -251,92 +245,96 @@ checkingPlayerInfo = function(){
 
 var changingForm = 0;
 var formTypeText = ["Already have an account? Login here", "Do not have an account? Register here"];
-formType = function(formTitle, usernameInput, passwordInput, formButton, accText){
+formType = function(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText){
   if(changingForm == 0){
-    if($(accText).attr("data-type") == "login"){
-      changingForm = 1;
-      $(accText).attr("data-type", "register");
-      formButton.disabled = true;
-      usernameInput.disabled = true;
-      passwordInput.disabled = true;
-      formButton.style.opacity = 0;
-      formButton.style.visibility = "hidden";
-      accText.style.visibility = "hidden";
-      accText.style.opacity = 0;
+    formButton.disabled = true;
+    usernameInput.disabled = true;
+    passwordInput.disabled = true;
+    changingForm = 1;
+
+    inputWrapper.style.opacity = 0;
+    inputWrapper.style.visibility = "hidden";
+    setTimeout(function(){
+      $("#submitError").text("");
       formTitle.style.opacity = 0;
-      setTimeout(function(){
-        $(formButton).attr("name", "Register");
-        $(formButton).attr("value", "Register");
-        $(formButton).attr("id", "Register");
-        formButton.style.opacity = 1;
-        formButton.style.visibility = "visible";
-        accText.innerHTML = formTypeText[0];
-        accText.style.visibility = "visible";
-        accText.style.opacity = 1;
-        formTitle.style.opacity = 1;
-        formButton.disabled = false;
-        usernameInput.disabled = false;
-        passwordInput.disabled = false;
-        formTitle.innerHTML = "REGISTER";
-        changingForm = 0;
-      },1100)
-    } else {
-      changingForm = 1;
-      $(accText).attr("data-type", "login");
-      formButton.disabled = true;
-      usernameInput.disabled = true;
-      passwordInput.disabled = true;
-      formButton.style.opacity = 0;
-      formButton.style.visibility = "hidden";
-      accText.style.visibility = "hidden";
-      accText.style.opacity = 0;
-      formTitle.style.opacity = 0;
-      setTimeout(function(){
-        $(formButton).attr("name", "Login");
-        $(formButton).attr("value", "Login");
-        $(formButton).attr("id", "Login");
-        formButton.style.opacity = 1;
-        formButton.style.visibility = "visible";
-        accText.innerHTML = formTypeText[1];
-        accText.style.visibility = "visible";
-        accText.style.opacity = 1;
-        formTitle.style.opacity = 1;
-        formButton.disabled = false;
-        usernameInput.disabled = false;
-        passwordInput.disabled = false;
-        formTitle.innerHTML = "LOGIN";
-        changingForm = 0;
-      },1100)
-    }
+      loginForm.style.maxHeight = "140px";
+      if($(accText).attr("data-type") == "login"){
+        $(accText).attr("data-type", "register");
+        setTimeout(function(){
+          $(formButton).attr("name", "Register");
+          $(formButton).attr("value", "Register");
+          $(formButton).attr("id", "Register");
+          formTitle.innerHTML = "REGISTER";
+          accText.innerHTML = formTypeText[0];
+          formButton.disabled = false;
+          usernameInput.disabled = false;
+          passwordInput.disabled = false;
+          formTitle.style.opacity = 1;
+          formTitle.style.visibility = "visible";
+          loginForm.style.boxShadow = "0px 10px 16px 0px rgba(0,0,0,0.5)";
+          loginForm.style.backgroundColor = "var(--blackMedium)";
+          setTimeout(function(){
+            loginForm.style.maxHeight = "502px";
+            setTimeout(function(){
+              inputWrapper.style.opacity = 1;
+              inputWrapper.style.visibility = "visible";
+              loginForm.style.maxHeight = "700px";
+              changingForm = 0;
+            },1000)
+          },1000)
+        },1100)
+      } else {
+        changingForm = 1;
+        $(accText).attr("data-type", "login");
+        setTimeout(function(){
+          $(formButton).attr("name", "Login");
+          $(formButton).attr("value", "Login");
+          $(formButton).attr("id", "Login");
+          formTitle.innerHTML = "LOGIN";
+          accText.innerHTML = formTypeText[1];
+          formTitle.style.opacity = 1;
+          formButton.style.opacity = 1;
+          formTitle.style.visibility = "visible";
+          formButton.disabled = false;
+          usernameInput.disabled = false;
+          passwordInput.disabled = false;
+          loginForm.style.boxShadow = "0px 10px 16px 0px rgba(0,0,0,0.5)";
+          loginForm.style.backgroundColor = "var(--blackMedium)";
+          setTimeout(function(){
+            loginForm.style.maxHeight = "502px";
+            setTimeout(function(){
+              inputWrapper.style.opacity = 1;
+              inputWrapper.style.visibility = "visible";
+              loginForm.style.maxHeight = "700px";
+              changingForm = 0;
+            },1000)
+          },1000)
+        },1100)
+      }
+    },1000)
   } else {
     console.log("Too soon! Slow down.");
   }
 }
 
-function addToInfo(text){
-  $("#loginInfo").text(text);
-  $("#loginInfo").css("opacity", "1");
-  setTimeout(function(){
-    $("#loginInfo").css("opacity", "0");
-  },5000)
-}
-
 $(document).ready(function(){
-  $(".formButtons").click(function(){
+  $(".submitForm").click(function(){
     formButtons();
   });
   $("#accText").click(function(){
     var formTitle = document.getElementById("formTitle");
+    var inputWrapper = document.getElementById("inputWrapper");
     var usernameInput = document.getElementById("usernameInput");
     var passwordInput = document.getElementById("passwordInput");
     var formButton = document.getElementsByClassName("formButtons")[0];
     var accText = document.getElementById("accText");
-    formType(formTitle, usernameInput, passwordInput, formButton, accText);
+    formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
   });
 
   formButtons = function(automaticLogin){
     var loginForm = document.getElementById("loginForm");
     var formTitle = document.getElementById("formTitle");
+    var inputWrapper = document.getElementById("inputWrapper");
     var usernameInput = document.getElementById("usernameInput");
     var passwordInput = document.getElementById("passwordInput");
     var formButton = document.getElementsByClassName("formButtons")[0];
@@ -364,14 +362,11 @@ $(document).ready(function(){
                   console.log(playerInfoJSON);
                   var playerInfo = JSON.parse(playerInfoJSON);
                   console.log(playerInfo);
-                  $(accText).off("click");
-                  accText.style.opacity = 0;
-                  accText.style.visibility = "hidden";
+                  inputWrapper.style.opacity = 0;
+                  inputWrapper.style.visibility = "hidden";
                   formButton.disabled = true;
                   usernameInput.disabled = true;
                   passwordInput.disabled = true;
-                  loginForm.style.opacity = 0;
-                  loginForm.style.visibility = "hidden";
                   var openIDB = openIDBshortcut();
                   openIDB.onupgradeneeded = function(evt){
                     var db = evt.target.result;
@@ -400,7 +395,7 @@ $(document).ready(function(){
                   }
                 });
               } else if(playerInfoCount.length == 0){
-                addToInfo("Username or password wrong");
+                $("#submitError").text("Username or password wrong");
               }
             });
         } else {
@@ -408,117 +403,120 @@ $(document).ready(function(){
         }
       })
       $("form").submit();
-
     } else {
-
-      if(/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(passwordVal) && usernameVal.length >= 6){
-        console.log($(this).attr("name"));
-        if($("input#Register").attr("name") == "Register"){
-          $("form").submit(function(event){
-            event.preventDefault();
-            if(sendingXHR == 0){
-              if($("input#Register").attr("name") == "Register"){
-                sendingXHR++;
-                connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
-                  if (err) throw err;
-                  var playerCountJSON = JSON.stringify(result);
-                  console.log(playerCountJSON);
-                  var playerCount = JSON.parse(playerCountJSON);
-                  console.log(playerCount);
-                  if(playerCount.length == 0){
-                    connection.query("INSERT INTO players(player_name, player_password) VALUES('" + usernameVal + "', MD5('" + passwordVal + "'))", function (err, result){
-                      if (err) throw err;
-                      $(accText).off("click");
-                      accText.style.opacity = 0;
-                      accText.style.visibility = "hidden";
-                      formButton.disabled = true;
-                      usernameInput.disabled = true;
-                      passwordInput.disabled = true;
-                      formType(formTitle, usernameInput, passwordInput, formButton, accText);
-                    });
-                  } else if(playerCount.length == 1) {
-                    addToInfo("Username já existe!");
-                  } else {
-                    throw new Error("Something wrong happened when trying to register, report to me!");
-                  }
-                });
+      if(usernameVal.length >= 6){
+        if(/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(passwordVal)){
+          console.log($(this).attr("name"));
+          if($("input#Register").attr("name") == "Register"){
+            $("form").submit(function(event){
+              event.preventDefault();
+              if(sendingXHR == 0){
+                if($("input#Register").attr("name") == "Register"){
+                  sendingXHR++;
+                  connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
+                    if (err) throw err;
+                    var playerCountJSON = JSON.stringify(result);
+                    console.log(playerCountJSON);
+                    var playerCount = JSON.parse(playerCountJSON);
+                    console.log(playerCount);
+                    if(playerCount.length == 0){
+                      connection.query("INSERT INTO players(player_name, player_password) VALUES('" + usernameVal + "', MD5('" + passwordVal + "'))", function (err, result){
+                        if (err) throw err;
+                        formButton.disabled = true;
+                        usernameInput.disabled = true;
+                        passwordInput.disabled = true;
+                        formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
+                      });
+                    } else if(playerCount.length == 1) {
+                      $("#submitError").text("Username já existe!");
+                    } else {
+                      throw new Error("Something wrong happened when trying to register, report to me!");
+                    }
+                  });
+                } else {
+                  console.log($(this).attr("name"));
+                }
               } else {
-                console.log($(this).attr("name"));
+                console.log("Too soon, slow down!");
               }
-            } else {
-              console.log("Too soon, slow down!");
-            }
-          })
-          $("form").submit();
-        } else if($("input#Login").attr("name") == "Login"){
-          $("form").submit(function(event){
-            event.preventDefault();
-            if(sendingXHR == 0){
-              if($("input#Login").attr("name") == "Login"){
-                connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "' AND player_password = MD5('" + passwordVal + "')", function (err, result) {
-                  if (err) throw err;
-                  var playerInfoCountJSON = JSON.stringify(result);
-                  console.log(playerInfoCountJSON);
-                  var playerInfoCount = JSON.parse(playerInfoCountJSON);
-                  console.log(playerInfoCount);
-                  if(playerInfoCount.length == 1){
-                    connection.query("SELECT * FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
-                      if (err) throw err;
-                      var playerInfoJSON = JSON.stringify(result);
-                      console.log(playerInfoJSON);
-                      var playerInfo = JSON.parse(playerInfoJSON);
-                      console.log(playerInfo);
-                      $(accText).off("click");
-                      accText.style.opacity = 0;
-                      accText.style.visibility = "hidden";
-                      formButton.disabled = true;
-                      usernameInput.disabled = true;
-                      passwordInput.disabled = true;
-                      loginForm.style.opacity = 0;
-                      loginForm.style.visibility = "hidden";
-                      var openIDB = openIDBshortcut();
-                      openIDB.onupgradeneeded = function(evt){
-                        var db = evt.target.result;
-                        setTimeout(function(){
-                          var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
-                          request.onsuccess = function(evt){
-                            console.log(evt);
-                            var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo[0]);
+            });
+            $("#usernameError").text("");
+            $("#passwordError").text("");
+            $("form").submit();
+          } else if($("input#Login").attr("name") == "Login"){
+            $("form").submit(function(event){
+              event.preventDefault();
+              if(sendingXHR == 0){
+                if($("input#Login").attr("name") == "Login"){
+                  connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "' AND player_password = MD5('" + passwordVal + "')", function (err, result) {
+                    if (err) throw err;
+                    var playerInfoCountJSON = JSON.stringify(result);
+                    console.log(playerInfoCountJSON);
+                    var playerInfoCount = JSON.parse(playerInfoCountJSON);
+                    console.log(playerInfoCount);
+                    if(playerInfoCount.length == 1){
+                      connection.query("SELECT * FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
+                        if (err) throw err;
+                        var playerInfoJSON = JSON.stringify(result);
+                        console.log(playerInfoJSON);
+                        var playerInfo = JSON.parse(playerInfoJSON);
+                        console.log(playerInfo);
+                        formButton.disabled = true;
+                        usernameInput.disabled = true;
+                        passwordInput.disabled = true;
+                        loginForm.style.opacity = 0;
+                        loginForm.style.visibility = "hidden";
+                        var openIDB = openIDBshortcut();
+                        openIDB.onupgradeneeded = function(evt){
+                          var db = evt.target.result;
+                          setTimeout(function(){
+                            var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
                             request.onsuccess = function(evt){
                               console.log(evt);
-                              console.log("Player info added!");
-                              db.close();
-                              goToHome();
-                            }
-                            request.onerror = function(evt){
-                              db.close();
-                              console.log(evt);
-                              if(evt.target.error.message == "Key already exists in the object store."){
+                              var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo[0]);
+                              request.onsuccess = function(evt){
+                                console.log(evt);
+                                console.log("Player info added!");
+                                db.close();
                                 goToHome();
-                              } else {
-                                throw new Error("Something wrong happened when trying to login, report to me!");
+                              }
+                              request.onerror = function(evt){
+                                db.close();
+                                console.log(evt);
+                                if(evt.target.error.message == "Key already exists in the object store."){
+                                  goToHome();
+                                } else {
+                                  throw new Error("Something wrong happened when trying to login, report to me!");
+                                }
                               }
                             }
-                          }
-                        },500);
-                      }
-                    });
-                  } else if(playerInfoCount.length == 0){
-                    addToInfo("Username or password wrong");
-                  }
-                });
+                          },500);
+                        }
+                      });
+                    } else if(playerInfoCount.length == 0){
+                      $("#submitError").text("Username or password wrong");
+                    }
+                  });
+                }
+              } else {
+                console.log("Too soon, slow down!")
               }
-            } else {
-              console.log("Too soon, slow down!")
-            }
-          })
-          $("form").submit();
+            });
+            $("#usernameError").text("");
+            $("#passwordError").text("");
+            $("form").submit();
+          } else {
+            throw new Error("Something wrong happened when trying to login or register, report to me!");
+          }
         } else {
-          throw new Error("Something wrong happened when trying to login or register, report to me!");
+          console.log("Password should contain at least eight characters, one lower and uppercase letter.");
+          $("#passwordError").text("Password should contain at least eight characters, one lower and uppercase letter.");
+          $("#usernameError").text("");
         }
       } else {
-        console.log("Password should contain at least eight characters, one lower and uppercase letter.");
-        addToInfo("Password should contain at least eight characters, one lower and uppercase letter.");
+        console.log("Username should contain at least six characters.");
+        $("#usernameError").text("Username should contain at least six characters.");
+        $("#passwordError").text("");
       }
     }
   }

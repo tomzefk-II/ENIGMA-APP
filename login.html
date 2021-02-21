@@ -27,24 +27,26 @@
       </div>
     </div>
 
-    <form method="post" id="loginForm" class="p-5" style="position: absolute; transform: translate(-50%, -50%); top: 50%; left: 50%; box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.4); z-index: 5;">
-      <h1 id="formTitle" class="font-weight-bold text-center text-grey m-3" style="-webkit-text-fill-color: rgba(0,0,0,0); -webkit-text-stroke: 1px #dbdbdb;"></h1>
-      <div class="text-center w-20">
+    <form method="post" id="loginForm">
+      <h1 id="formTitle">REGISTER</h1>
+      <div id="inputWrapper">
         <div>
-          <h4 class="m-0 mb-2 text-grey">Username</h4>
-          <input id="usernameInput" class="loginInputs" type="text" name="username" value="" minlength="6" maxlength="12" required disabled>
+          <h4 class="mb-0">Username</h4>
+          <input id="usernameInput" class="loginInputs" type="text" name="username" value="" minlength="6" maxlength="12" required disabled autocomplete="off">
+          <p id="usernameError" class="mt-2" style="color: var(--error); font-size: var(--minText);"></p>
         </div>
         <br>
-        <div class="mb-3">
-          <h4 class="m-0 mb-2 text-grey">Password</h4>
-          <input id="passwordInput" class="loginInputs" type="password" name="password" value="" minlength="6" required disabled>
+        <div>
+          <h4 class="mb-0">Password</h4>
+          <input id="passwordInput" class="loginInputs" type="password" name="password" value="" minlength="6" required disabled autocomplete="off">
+          <p id="passwordError" class="mt-2" style="color: var(--error);  font-size: var(--minText);"></p>
         </div>
-        <input class="mt-3 ml-2 formButtons" type="button" name="" value="" id="" disabled>
+        <input class="formButtons submitForm" type="button" name="" value="" id="" disabled>
+        <p id="submitError" class="mt-2" style="color: var(--error);  font-size: var(--minText);"></p>
         <p id="accText" class="mt-4 text-grey" data-type=""></p> <!-- Do not have an account? Register here / Already have an account? Login here -->
         <br>
       </div>
     </form>
-    <h4 id="loginInfo" class="text-center text-grey p-4"></h4>
 
     <script src="js/app.js"></script>
     <script>

@@ -192,6 +192,7 @@
         setTimeout(function(){
           var request = db.transaction(['players'], "readonly").objectStore("players").getAll();
           request.onsuccess = function(evt){
+            db.close();
             console.log(evt);
             playerinfo.player_id = evt.target.result[0].player_id.toString();
             playerinfo.player_name = evt.target.result[0].player_name;
@@ -408,12 +409,11 @@
     const { networkInterfaces } = require('os');
 
     const nets = networkInterfaces();
-    const results = Object.create(null); // Or just '{}', an empty object
+    const results = {}; // Or just '{}', an empty object
     var ip;
 
     for (const name of Object.keys(nets)) {
         for (const net of nets[name]) {
-            // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
             if (net.family === 'IPv4' && !net.internal) {
                 if (!results[name]) {
                     results[name] = [];
@@ -475,7 +475,7 @@
               }
             }
           },500)
-        },0) // dunno why this happens
+        },0)
       }
 
 
@@ -640,7 +640,6 @@
         server.listen(9010);
         server.maxConnections = 1;
 
-        // Listen for Web Socket connections.
         wss.on("listening", function () {
           console.log("listening");
           $(setting).attr("d", connections.bridge.status.activated.path);
@@ -690,9 +689,10 @@
       configurationServer.on("connection", function(socket){
         console.log(socket);
         setTimeout(function(){
+          console.log("Configuration Server timeout");
           configurationServer.close(function(){console.log('Server closed!')});
           socket.destroy();
-        },5000);
+        },60000);
       })
     }
 

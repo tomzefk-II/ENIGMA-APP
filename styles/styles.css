@@ -1,3 +1,20 @@
+:root {
+  --blackHigh: #242424;
+  --blackMedium: #161616;
+  --blackbg: #121212;
+  --whiteHigh: #dedede;
+  --whiteMedium: #999999;
+  --whiteDisable: #616161;
+  --error: #CF6679;
+  /* --- */
+  --roundness: 20px;
+  --border: 2px;
+  /* --- */
+  --minText: 16px;
+  --mediumText: 24px;
+  --title: 36px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,46 +28,110 @@ body {
   transition: 1s;
 }
 
-.text-grey {
-  color: #dbdbdb;
+/* --- */
+
+/* Loading Bar */
+
+.loadingBar {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50vh;
+  left: 50vw;
+  width: 0%;
+  height: 30px;
+  border-bottom: var(--border) solid var(--whiteMedium);
+  transition: 1s;
 }
 
+.loadingBar h6 {
+  width: 100%;
+  line-height: 30px;
+  text-align: center;
+  color: var(--whiteHigh);
+}
 /* --- */
 
 
 /* LOGIN PAGE */
 
 #loginForm {
+  transform: translate(-50%, -50%);
+  margin-top: 50vh;
+  margin-left: 50vw;
+  width: 80vw;
+  max-height: 140px;
+  padding: 20px;
+  text-align: center;
+  background-color: var(--blackbg);
+  box-shadow: 0px 0px 0px 0px rgba(0,0,0,0);
   transition: 1s;
   visibility: hidden;
   opacity: 0;
+  z-index: 5;
+  color: var(--whiteHigh);
+  overflow: hidden;
 }
 
-.formButtons {
-  padding: 3px 20px;
-  background-color: #161616;
-  border: 2px solid #dbdbdb;
-  border-radius: 5px;
-  color: #dbdbdb;
+#loginForm #formTitle {
+  font-size: var(--title);
+  margin: 20px;
+  font-weight: 700;
+  line-height: 70px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.5s;
+  color: var(--whiteHigh);
+}
+
+#loginForm #accText {
+  padding: 10px;
+  transition: 1s;
+  font-size: var(--minText);
+  color: var(--whiteMedium);
 }
 
 input.loginInputs {
-  background-color: #161616;
-  border: 2px solid #dbdbdb;
-  border-radius: 5px;
-  color: #dbdbdb;
+  width: 70%;
+  height: 30px;
+  font-size: var(--minText);
+  background-color: var(--blackMedium);
+  box-shadow: none;
+  border: none;
+  border-bottom: var(--border) solid var(--whiteHigh);
+  color: var(--whiteHigh);
+  transition: 0.2s;
 }
 
-#loginInfo {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  top: 97.5%;
-  left: 50%;
-  width: 100%;
-  font-size: 16px;
-  transition: 0.5s;
-  opacity: 0;
+input.loginInputs:focus {
+  outline: none;
+  border: none;
+  border-bottom: calc(var(--border) + 1px) solid var(--whiteHigh);
 }
+
+input.loginInputs:disabled {
+  outline: none;
+  border: none;
+  border-bottom: 0px solid var(--whiteHigh);
+}
+
+#loginForm #inputWrapper {
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.5s;
+}
+
+.formButtons {
+  margin-top: 30px;
+  padding: 3px 20px;
+  transition: 1s;
+  background-color: var(--blackMedium);
+  border: var(--border) solid var(--whiteHigh);
+  box-shadow: 0px 5px 6px 0px rgba(0,0,0,0.5);
+  border-radius: var(--roundness);
+  color: var(--whiteHigh);
+}
+
 
 /* END LOGIN PAGE */
 

@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({
+  path: `${__dirname}/.env`
+});
 const { ipcRenderer } = require('electron');
 var jsdom = require('jsdom');
 const { JSDOM } = jsdom;

@@ -523,8 +523,8 @@
       // const http = require('http');
       console.log("Turning on configuration server");
       const options = {
-        key: fs.readFileSync('cert/key.pem'), // resources/
-        cert: fs.readFileSync('cert/cert.pem')
+        key: fs.readFileSync('resources/cert/key.pem'), // resources/
+        cert: fs.readFileSync('resources/cert/cert.pem')
       };
       var configurationServer = https.createServer(options, function (req, res) {
         console.log("Server created");

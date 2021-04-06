@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="js/app.js"></script>
+    <script src="js/oscConnection.js"></script>
 </head>
 <body>
   <div class="app-menu">
@@ -27,9 +28,9 @@
 
   <div id="playgame-wrapper">
     <h1 id="project-phrase">SOMETHING ABOUT<br>THE PROJECT.</h1>
-    <div id="playgame-btn">
+    <button id="playgame-btn">
       <h4></h4>
-    </div>
+    </button>
     <div id="downloadWrapper">
       <div class="progressBar"></div>
       <h4></h4>
@@ -180,9 +181,18 @@
 
 
     let playerinfo = {
+      player_code: undefined,
       player_id: undefined,
       player_name: undefined,
-      player_level: undefined
+      player_level: undefined,
+      player_isBetaTester: undefined,
+      player_registationDate: undefined,
+      player_playTime: undefined,
+      player_lastZone: undefined,
+      player_skillsAcquired: undefined,
+      player_deaths: undefined,
+      player_phrasesDecoded: undefined,
+      player_hintsUsed: undefined,
     };
     $(document).ready(function(){
 
@@ -196,7 +206,16 @@
             console.log(evt);
             playerinfo.player_id = evt.target.result[0].player_id.toString();
             playerinfo.player_name = evt.target.result[0].player_name;
-            playerinfo.player_level = evt.target.result[0].player_level.toString();
+            playerinfo.player_level = evt.target.result[0].player_level;
+            playerinfo.player_code = evt.target.result[0].player_code;
+            playerinfo.player_registationDate = evt.target.result[0].player_registationDate;
+            playerinfo.player_playtime = evt.target.result[0].player_playtime;
+            playerinfo.player_lastZone = evt.target.result[0].player_lastZone;
+            playerinfo.player_skillsAcquired = evt.target.result[0].player_skillsAcquired;
+            playerinfo.player_deaths = evt.target.result[0].player_deaths;
+            playerinfo.player_phrasesDecoded = evt.target.result[0].player_phrasesDecoded;
+            playerinfo.player_hintsUsed = evt.target.result[0].player_hintsUsed;
+            $(".account-name").text(playerinfo.player_name);
           }
         },500)
       }
@@ -273,7 +292,6 @@
       });
 
       var playgameClick = $("#playgame-btn").click(function(){
-        console.log("clicked");
         const request = require('request')
         const RequestInfo = require('request-download-info')
         const fs = require('fs')
@@ -334,7 +352,7 @@
           setTimeout(function(){
             $("#playgame-btn h4").text("PLAYING");
             $("#playgame-btn h4").css("opacity", "1");
-
+            openUDPPortToUnreal();
             var child = require('child_process').execFile;
             var executablePath = "gameFiles/package/WindowsNoEditor/SimpleUnrealExample.exe";
             child(executablePath, function(err, data) {
@@ -344,6 +362,7 @@
               }
               $("#playgame-btn h4").css("opacity", "0");
               setTimeout(function(){
+                udpPort.close();
                 $("#playgame-btn h4").text("PLAY GAME");
                 $("#playgame-btn h4").css("opacity", "1");
               },800);
@@ -499,184 +518,13 @@
       //   console.log("wss closed");
       // }
 
-    const WebSocket = require("ws");
-    const osc = require("osc")
-    const https = require("https")
-    const fs = require("fs")
-    let server;
-    let wss;
-    let socketPort;
-    let sameID = false;
-    let sameVersion = false;
-    let isUnrealConnectionReady = false;
-    let isPWAConnectionReady = false;
-
-    toggleBridge = function(){
-      var setting = $("#setting-bridge-connection .setting-toggle path");
-
-      if($(setting).attr("d") == connections.bridge.status.activated.path){
-        console.log("Bridge disabled");
-        $(setting).attr("d", connections.bridge.status.disabled.path);
-        serverClose();
-        setTimeout(function(){
-          var wss;
-          var server;
-          var socketPort;
-        },500)
-      } else {
-        var server = https.createServer({
-          cert: fs.readFileSync('resources/cert/cert.pem'), // /resources/
-          key: fs.readFileSync('resources/cert/key.pem')
-        });
-        var wss = new WebSocket.Server({ server });
-        wss.on("connection", function (socket) {
-          var socketPort = new osc.WebSocketPort({
-              socket: socket,
-              metadata: false
-          });
-
-          console.log(socket._socket.remoteAddress);
-          console.log(socket._socket.remotePort);
-          // sendPlayerPosToPWA = function(){
-          //   // for(const client of wss.clients){
-          //   //   console.log(client);
-          //   // }
-          //   console.log(socketPort);
-          //   console.log(socket);
-          // }
-          console.log("Connection received");
-          updateConnectionStatus("bridge-connection", "goodConnection", null);
-          socketPort.on("message", function (oscMsg) {
-            console.log("An OSC Message was received!");
-            console.log(oscMsg);
-            if(oscMsg.address == "/playerInfo"){
-              let receivedPlayerInfo = JSON.parse(oscMsg.args[0]);
-              console.log("Received:");
-              console.log(receivedPlayerInfo);
-              console.log("Current:");
-              console.log(playerinfo);
-              if(receivedPlayerInfo.player_id !== playerinfo.player_id){
-                sameID = false;
-                var reason = "Connected client has not the same player ID!";
-                var errorCode = 4001;
-                console.log(reason);
-                for(const client of wss.clients){
-                  client.close(errorCode, reason);
-                  console.log("Client Kicked!");
-                }
-              } else {
-                console.log("Same player id");
-                sameID = true;
-              }
-            } else if(oscMsg.address == "/pwaVersion"){
-              var currentVersion = version.innerText;
-              var receivedVersion = oscMsg.args[0];
-              console.log("Received: " + receivedVersion);
-              console.log("Current: " + currentVersion);
-              if(receivedVersion !== currentVersion) {
-                sameVersion = false;
-                var reason = "Connected client has not the same app version!";
-                var errorCode = 4002;
-                console.log(reason);
-                for(const client of wss.clients){
-                  client.close(errorCode, reason);
-                  console.log("Client Kicked!");
-                }
-              } else {
-                console.log("Same app version");
-                sameVersion = true;
-              }
-            }
-            if(sameID == true && sameVersion == true){
-              isPWAConnectionReady = true;
-              console.log("A Bridge connection to PWA was successfully made!");
-              console.log("Trying to open UDP Server for Unreal to connect");
-              var udpPort = new osc.UDPPort({
-                  localAddress: "127.0.0.1",
-                  localPort: 9008
-              });
-              udpPort.open();
-              udpPort.on("open", function(){
-                console.log("Opened connection to Unreal");
-                console.log("Waiting for Unreal to connect...");
-              })
-              udpPort.on("message", function(event){
-                console.log(event);
-                if(event.address == "/SendToBridge/playerPos"){
-                  console.log("Received: " + event.args[0]);
-                  console.log("Sending player position to PWA!");
-                  socketPort.send({
-                      address: "/SendFromBridge/UnrealPlayerPos",
-                      args: [event.args[0]]
-                  }, socket._socket.remoteAddress, socket._socket.remotePort);
-                } else if(event.address == "/SendToBridge/connection"){
-                  var messageFromUnreal = event.args[0];
-                  console.log("Received: " + messageFromUnreal);
-                  if(messageFromUnreal == "Ready"){
-                    console.log("A connection between Unreal and Bridge has been established!");
-                    isUnrealConnectionReady = true;
-                    socketPort.send({
-                        address: "/SendFromBridge/UnrealConnection",
-                        args: [messageFromUnreal]
-                    }, socket._socket.remoteAddress, socket._socket.remotePort);
-                  };
-                }
-              })
-            }
-          });
-
-          socketPort.on("close", function(socket){
-            sameID = false;
-            sameVersion = false;
-            isPWAConnectionReady = false;
-            isUnrealConnectionReady = false;
-            console.log("Client disconnected");
-            updateConnectionStatus("bridge-connection", "warningConnection", null);
-            //
-          })
-        });
-
-        console.log("Bridge activated");
-        server.listen(9010);
-        server.maxConnections = 1;
-
-        wss.on("listening", function () {
-          console.log("listening");
-          $(setting).attr("d", connections.bridge.status.activated.path);
-          updateConnectionStatus("bridge-connection", "warningConnection", null);
-        });
-
-        serverClose = function(){
-          console.log(wss.clients);
-          var reason = "Server is closing!";
-          var errorCode = 4000;
-          console.log(reason);
-          for(const client of wss.clients){
-            client.close(errorCode, reason);
-            console.log("Client Kicked!");
-          }
-          wss.close();
-          server.close();
-          wss.on("close", function(){
-            console.log("wss closed");
-          })
-          server.on("close", function(){
-            console.log("server closed");
-          })
-          setTimeout(function(){
-            updateConnectionStatus("bridge-connection", "errorConnection", "disabled");
-          },500)
-        }
-      }
-    }
-
 
     configurePWA = function(){
       // const http = require('http');
       console.log("Turning on configuration server");
       const options = {
-        key: fs.readFileSync('resources/cert/key.pem'), // /resources/
-        cert: fs.readFileSync('resources/cert/cert.pem')
+        key: fs.readFileSync('cert/key.pem'), // resources/
+        cert: fs.readFileSync('cert/cert.pem')
       };
       var configurationServer = https.createServer(options, function (req, res) {
         console.log("Server created");

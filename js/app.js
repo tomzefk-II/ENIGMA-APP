@@ -1,27 +1,45 @@
+require('dotenv').config();
 const { ipcRenderer } = require('electron');
 var jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 var $, jQuery;
 $ = jQuery = require('jquery');
 var mysql = require('mysql');
+let internetConnection;
+if(navigator.onLine == true){
+  internetConnection = true;
+} else {
+  internetConnection = false;
+}
+
+window.addEventListener('offline', function(e) {
+  console.log('user offline');
+  internetConnection = false;
+});
+
+window.addEventListener('online', function(e) {
+  console.log('user online');
+  internetConnection = true;
+});
+
+let connection = mysql.createConnection({
+  host     : process.env.DB_HOST,
+  user     : process.env.DB_USER,
+  password : process.env.DB_PASS,
+  database : process.env.DB_NAME
+});
 
 let ObjectStores = [
   {
     OSName: "players",
-    OSIndex: ["player_id", "player_name", "player_isBetaTester", "player_level"]
+    OSIndex: ["player_id"]
   },
   {
     OSName: "settings",
-    OSIndex: ["setting_id", "theme"]
+    OSIndex: ["setting_id"]
   }
 ];
 
-var connection = mysql.createConnection({
-  host     : '45.87.81.77', // 45.87.81.77
-  user     : 'u501538363_players',
-  password : 'Enigma_Players_123',
-  database : 'u501538363_enigma'
-});
 
 var error;
 initLoadingBarValue = function(value){
@@ -41,6 +59,10 @@ initLoadingBarValue = function(value){
       loadingBar.style.width = "100%";
       loadingBar.style.borderColor = "orange";
       loadingBarPercentage.innerHTML = "Checking for updates..."
+    } else if(value == "noInternet"){
+      loadingBar.style.width = "100%";
+      loadingBar.style.borderColor = "orange";
+      loadingBarPercentage.innerHTML = "No internet connection..."
     } else {
       var value = Math.round(value);
       loadingBar.style.borderColor = "#dbdbdb";
@@ -151,12 +173,10 @@ checkSettings = function(){
     setTimeout(function(){
       var request = db.transaction(['settings'], "readonly").objectStore("settings").count();
       request.onsuccess = function(evt){
+        console.log(evt);
         if(evt.target.result == 0){
           var defaultSettings = [{
             "setting_id": "2",
-            "automatic_login": "0"
-          },{
-            "setting_id": "3",
             "theme": "0"
           }];
           for(i=0; i < defaultSettings.length; i++){
@@ -172,7 +192,7 @@ checkSettings = function(){
             console.log("Done");
             goToNewWindow();
           }
-        } else if(evt.target.result > 1) {
+        } else if(evt.target.result >= 1) {
           var request = db.transaction(['settings'], "readwrite").objectStore("settings").getAll();
           request.onsuccess = function(evt){
             var currentSetting = evt.target.result;
@@ -195,7 +215,7 @@ checkSettings = function(){
   }
 }
 
-checkingPlayerInfo = function(){
+checkingPlayerInfo = function(connection){
   var loginForm = document.getElementById("loginForm");
   var introDiv = document.getElementById("intro");
   var loadingBarDiv = document.getElementById("loadingBar");
@@ -213,30 +233,41 @@ checkingPlayerInfo = function(){
       request.onsuccess = function(evt){
         if(evt.target.result !== 0){
           console.log("Previous player info found.");
-          $(accText).attr("data-type", "register");
-          var requestPlayerInfo = db.transaction(['players'], "readwrite").objectStore("players").getAll();
-          requestPlayerInfo.onsuccess = function(playerInfo){
-            console.log(playerInfo);
-            $(usernameInput).val(playerInfo.target.result[0].player_name);
-            $(passwordInput).val(playerInfo.target.result[0].player_password);
-            var automaticLogin = 1;
-            $(".submitForm").click(formButtons(automaticLogin));
+          if(connection == true){
+            $(accText).attr("data-type", "register");
+            var requestPlayerInfo = db.transaction(['players'], "readwrite").objectStore("players").getAll();
+            requestPlayerInfo.onsuccess = function(playerInfo){
+              console.log(playerInfo);
+              $(usernameInput).val(playerInfo.target.result[0].player_name);
+              $(passwordInput).val(playerInfo.target.result[0].player_password);
+              var automaticLogin = 1;
+              $(".submitForm").click(formButtons(automaticLogin));
+              db.close();
+            }
+            setTimeout(function(){
+              loginForm.style.visibility = "visible";
+              loginForm.style.opacity = 1;
+              formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
+            },1000)
+          } else {
             db.close();
+            console.log("Logging in...");
+            goToHome();
           }
-          setTimeout(function(){
-            loginForm.style.visibility = "visible";
-            loginForm.style.opacity = 1;
-            formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
-          },1000)
         } else {
           db.close();
           console.log("Player info not found.");
-          $(accText).attr("data-type", "login");
-          setTimeout(function(){
-            loginForm.style.visibility = "visible";
-            loginForm.style.opacity = 1;
-            formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
-          },1000);
+          if(navigator.onLine == true){
+            $(accText).attr("data-type", "login");
+            setTimeout(function(){
+              loginForm.style.visibility = "visible";
+              loginForm.style.opacity = 1;
+              formType(formTitle, inputWrapper, usernameInput, passwordInput, formButton, accText);
+            },1000);
+          } else {
+            console.log("User offline, cannot register or login!");
+            throw new Error("User offline, no way to validate credentials");
+          }
         }
       }
     },500)
@@ -358,41 +389,76 @@ $(document).ready(function(){
               if(playerInfoCount.length == 1){
                 connection.query("SELECT * FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
                   if (err) throw err;
-                  var playerInfoJSON = JSON.stringify(result);
-                  console.log(playerInfoJSON);
-                  var playerInfo = JSON.parse(playerInfoJSON);
-                  console.log(playerInfo);
-                  inputWrapper.style.opacity = 0;
-                  inputWrapper.style.visibility = "hidden";
-                  formButton.disabled = true;
-                  usernameInput.disabled = true;
-                  passwordInput.disabled = true;
-                  var openIDB = openIDBshortcut();
-                  openIDB.onupgradeneeded = function(evt){
-                    var db = evt.target.result;
-                    setTimeout(function(){
-                      var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
-                      request.onsuccess = function(evt){
-                        console.log(evt);
-                        var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo[0]);
-                        request.onsuccess = function(evt){
-                          console.log(evt);
-                          console.log("Player info added!");
-                          db.close();
-                          goToHome();
+                  var playerBasicInfoJSON = JSON.stringify(result);
+                  console.log(playerBasicInfoJSON);
+                  var playerBasicInfo = JSON.parse(playerBasicInfoJSON);
+                  console.log(playerBasicInfo);
+                  var playerSkillsAcquired;
+                  var playerPhrasesDecoded;
+                  var playerHintUsed;
+                  connection.query("SELECT * FROM skills_acquired WHERE skillsAcquired_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                    if (err) throw err;
+                    var playerSkillsAcquiredJSON = JSON.stringify(result);
+                    console.log(playerSkillsAcquiredJSON);
+                    playerSkillsAcquired = JSON.parse(playerSkillsAcquiredJSON);
+                    console.log(playerSkillsAcquired);
+
+                    connection.query("SELECT * FROM phrases_decoded WHERE phrasesDecoded_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                      if (err) throw err;
+                      var playerPhrasesDecodedJSON = JSON.stringify(result);
+                      console.log(playerPhrasesDecodedJSON);
+                      playerPhrasesDecoded = JSON.parse(playerPhrasesDecodedJSON);
+                      console.log(playerPhrasesDecoded);
+
+                      connection.query("SELECT * FROM hints_used WHERE hintUsed_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                        if (err) throw err;
+                        var playerHintUsedJSON = JSON.stringify(result);
+                        console.log(playerHintUsedJSON);
+                        playerHintUsed = JSON.parse(playerHintUsedJSON);
+                        console.log(playerHintUsed);
+
+                        var countPlayerPlusInfo = {
+                          "player_skillAcquired": playerSkillsAcquired.length,
+                          "player_phrasesDecoded": playerPhrasesDecoded.length,
+                          "player_hintsUsed": playerHintUsed.length,
                         }
-                        request.onerror = function(evt){
-                          db.close();
-                          console.log(evt);
-                          if(evt.target.error.message == "Key already exists in the object store."){
-                            goToHome();
-                          } else {
-                            throw new Error("Something wrong happened when trying to login, report to me!");
-                          }
+                        var playerInfo = $.extend(playerBasicInfo[0], countPlayerPlusInfo);
+                        console.log(playerInfo);
+
+                        inputWrapper.style.opacity = 0;
+                        inputWrapper.style.visibility = "hidden";
+                        formButton.disabled = true;
+                        usernameInput.disabled = true;
+                        passwordInput.disabled = true;
+                        var openIDB = openIDBshortcut();
+                        openIDB.onupgradeneeded = function(evt){
+                          var db = evt.target.result;
+                          setTimeout(function(){
+                            var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
+                            request.onsuccess = function(evt){
+                              console.log(evt);
+                              var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo);
+                              request.onsuccess = function(evt){
+                                console.log(evt);
+                                console.log("Player info added!");
+                                db.close();
+                                goToHome();
+                              }
+                              request.onerror = function(evt){
+                                db.close();
+                                console.log(evt);
+                                if(evt.target.error.message == "Key already exists in the object store."){
+                                  goToHome();
+                                } else {
+                                  throw new Error("Something wrong happened when trying to login, report to me!");
+                                }
+                              }
+                            }
+                          },500);
                         }
-                      }
-                    },500);
-                  }
+                      });
+                    });
+                  });
                 });
               } else if(playerInfoCount.length == 0){
                 $("#submitError").text("Username or password wrong");
@@ -420,7 +486,7 @@ $(document).ready(function(){
                     var playerCount = JSON.parse(playerCountJSON);
                     console.log(playerCount);
                     if(playerCount.length == 0){
-                      connection.query("INSERT INTO players(player_name, player_password) VALUES('" + usernameVal + "', MD5('" + passwordVal + "'))", function (err, result){
+                      connection.query("INSERT INTO players(player_code, player_name, player_password) VALUES('" + CryptoJS.MD5(usernameVal).toString().substring(0, 20) + "', '" + usernameVal + "', MD5('" + passwordVal + "'))", function (err, result){
                         if (err) throw err;
                         formButton.disabled = true;
                         usernameInput.disabled = true;
@@ -457,41 +523,75 @@ $(document).ready(function(){
                     if(playerInfoCount.length == 1){
                       connection.query("SELECT * FROM players WHERE player_name = '" + usernameVal + "'", function (err, result) {
                         if (err) throw err;
-                        var playerInfoJSON = JSON.stringify(result);
-                        console.log(playerInfoJSON);
-                        var playerInfo = JSON.parse(playerInfoJSON);
-                        console.log(playerInfo);
-                        formButton.disabled = true;
-                        usernameInput.disabled = true;
-                        passwordInput.disabled = true;
-                        loginForm.style.opacity = 0;
-                        loginForm.style.visibility = "hidden";
-                        var openIDB = openIDBshortcut();
-                        openIDB.onupgradeneeded = function(evt){
-                          var db = evt.target.result;
-                          setTimeout(function(){
-                            var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
-                            request.onsuccess = function(evt){
-                              console.log(evt);
-                              var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo[0]);
-                              request.onsuccess = function(evt){
-                                console.log(evt);
-                                console.log("Player info added!");
-                                db.close();
-                                goToHome();
+                        var playerBasicInfoJSON = JSON.stringify(result);
+                        console.log(playerBasicInfoJSON);
+                        var playerBasicInfo = JSON.parse(playerBasicInfoJSON);
+                        console.log(playerBasicInfo);
+                        var playerSkillsAcquired;
+                        var playerPhrasesDecoded;
+                        var playerHintUsed;
+                        connection.query("SELECT * FROM skills_acquired WHERE skillsAcquired_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                          if (err) throw err;
+                          var playerSkillsAcquiredJSON = JSON.stringify(result);
+                          console.log(playerSkillsAcquiredJSON);
+                          playerSkillsAcquired = JSON.parse(playerSkillsAcquiredJSON);
+                          console.log(playerSkillsAcquired);
+
+                          connection.query("SELECT * FROM phrases_decoded WHERE phrasesDecoded_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                            if (err) throw err;
+                            var playerPhrasesDecodedJSON = JSON.stringify(result);
+                            console.log(playerPhrasesDecodedJSON);
+                            playerPhrasesDecoded = JSON.parse(playerPhrasesDecodedJSON);
+                            console.log(playerPhrasesDecoded);
+
+                            connection.query("SELECT * FROM hints_used WHERE hintUsed_player_id = '" + playerBasicInfo[0].player_id + "'", function (err, result) {
+                              if (err) throw err;
+                              var playerHintUsedJSON = JSON.stringify(result);
+                              console.log(playerHintUsedJSON);
+                              playerHintUsed = JSON.parse(playerHintUsedJSON);
+                              console.log(playerHintUsed);
+
+                              var countPlayerPlusInfo = {
+                                "player_skillAcquired": playerSkillsAcquired.length,
+                                "player_phrasesDecoded": playerPhrasesDecoded.length,
+                                "player_hintsUsed": playerHintUsed.length,
                               }
-                              request.onerror = function(evt){
-                                db.close();
-                                console.log(evt);
-                                if(evt.target.error.message == "Key already exists in the object store."){
-                                  goToHome();
-                                } else {
-                                  throw new Error("Something wrong happened when trying to login, report to me!");
-                                }
+                              var playerInfo = $.extend(playerBasicInfo[0], countPlayerPlusInfo);
+                              console.log(playerInfo);
+                              formButton.disabled = true;
+                              usernameInput.disabled = true;
+                              passwordInput.disabled = true;
+                              loginForm.style.opacity = 0;
+                              loginForm.style.visibility = "hidden";
+                              var openIDB = openIDBshortcut();
+                              openIDB.onupgradeneeded = function(evt){
+                                var db = evt.target.result;
+                                setTimeout(function(){
+                                  var request = db.transaction(['players'], "readwrite").objectStore("players").clear();
+                                  request.onsuccess = function(evt){
+                                    console.log(evt);
+                                    var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo);
+                                    request.onsuccess = function(evt){
+                                      console.log(evt);
+                                      console.log("Player info added!");
+                                      db.close();
+                                      goToHome();
+                                    }
+                                    request.onerror = function(evt){
+                                      db.close();
+                                      console.log(evt);
+                                      if(evt.target.error.message == "Key already exists in the object store."){
+                                        goToHome();
+                                      } else {
+                                        throw new Error("Something wrong happened when trying to login, report to me!");
+                                      }
+                                    }
+                                  }
+                                },500);
                               }
-                            }
-                          },500);
-                        }
+                            })
+                          })
+                        })
                       });
                     } else if(playerInfoCount.length == 0){
                       $("#submitError").text("Username or password wrong");
@@ -567,6 +667,14 @@ checkGameDownloadStatus = function(){
 
   } else {
     console.log(".zip doesnt exist.");
+    console.log(internetConnection);
+    if(internetConnection == false){
+      console.log("User offline, cannot download the game!");
+      $("#playgame-btn").prop("disabled", true);
+    } else {
+      console.log("User online, can now download the game!");
+      $("#playgame-btn").prop("disabled", false);
+    }
     $("#playgame-btn h4").text("DOWNLOAD");
     $("#playgame-btn").css("opacity", "1");
     $("#playgame-btn").css("visibility", "visible");

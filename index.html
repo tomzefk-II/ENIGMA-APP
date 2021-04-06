@@ -14,54 +14,61 @@
   <script>
 
   // DEBUGGING
-  // setTimeout(function(){
-  //   initPWA();
-  // },2000);
-
-  var mysql = require('mysql');
-  let canRestart = 0;
-
-  ipcRenderer.send('app_version');
-  ipcRenderer.on('app_version', (event, arg) => {
-    console.log("v" + arg.version)
-  });
-
-  initLoadingBarValue("checkingUpdates");
-
-  ipcRenderer.on('update_available', () => {
-    console.log("An update is available");
-    ipcRenderer.removeAllListeners('update_available');
-    console.log("Preparing for update...");
-    localStorage.clear();
-    var deleteIDB = indexedDB.deleteDatabase(dbName);
-    deleteIDB.onsuccess = function(){
-      canRestart = 1;
-    }
-  });
-
-  ipcRenderer.on('update_downloaded', () => {
-    console.log("The update has been downloaded");
-    ipcRenderer.removeAllListeners('update_downloaded');
-    console.log("Restarting");
-    var restartInterval = setInterval(function(){
-      if(canRestart = 1){
-        ipcRenderer.send('restart_app');
-      } else {
-        console.log("Not ready to restart yet");
-      }
-    },1000);
-  });
-
-  ipcRenderer.on('update_not_available', () => {
-    console.log("Update not available, proceeding with startup");
-    ipcRenderer.removeAllListeners('update_not_available');
+  setTimeout(function(){
     initPWA();
-  });
+  },2000);
 
-  ipcRenderer.on('error', () => {
-    console.log("An error has happened");
-    ipcRenderer.removeAllListeners('error');
-  });
+  if(internetConnection == true){
+    let canRestart = 0;
+    ipcRenderer.send('app_version');
+    ipcRenderer.on('app_version', (event, arg) => {
+      console.log("v" + arg.version)
+    });
+
+    initLoadingBarValue("checkingUpdates");
+
+    ipcRenderer.on('update_available', () => {
+      console.log("An update is available");
+      ipcRenderer.removeAllListeners('update_available');
+      console.log("Preparing for update...");
+      setTimeout(function(){
+        localStorage.clear();
+        var deleteIDB = indexedDB.deleteDatabase(dbName);
+        deleteIDB.onsuccess = function(){
+          canRestart = 1;
+        }
+      },1000)
+    });
+
+    ipcRenderer.on('update_downloaded', () => {
+      console.log("The update has been downloaded");
+      ipcRenderer.removeAllListeners('update_downloaded');
+      console.log("Restarting");
+      var restartInterval = setInterval(function(){
+        if(canRestart = 1){
+          ipcRenderer.send('restart_app');
+        } else {
+          console.log("Not ready to restart yet");
+        }
+      },1000);
+    });
+
+    ipcRenderer.on('update_not_available', () => {
+      console.log("Update not available, proceeding with startup");
+      ipcRenderer.removeAllListeners('update_not_available');
+      initPWA();
+    });
+
+    ipcRenderer.on('error', () => {
+      console.log("An error has happened");
+      ipcRenderer.removeAllListeners('error');
+    });
+  } else {
+    initLoadingBarValue("noInternet");
+    setTimeout(function(){
+      initPWA();
+    },1000);
+  }
 
   goToNewWindow = function(){
     setTimeout(function(){

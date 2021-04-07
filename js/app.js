@@ -31,6 +31,11 @@ let connection = mysql.createConnection({
   database : process.env.DB_NAME
 });
 
+// console.log(process.env.DB_HOST);
+// console.log(process.env.DB_USER);
+// console.log(process.env.DB_PASS);
+// console.log(process.env.DB_NAME);
+
 let ObjectStores = [
   {
     OSName: "players",
@@ -474,7 +479,7 @@ $(document).ready(function(){
     } else {
       if(usernameVal.length >= 6){
         if(/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(passwordVal)){
-          console.log($(this).attr("name"));
+          console.log($("input#Register").attr("name"));
           if($("input#Register").attr("name") == "Register"){
             $("form").submit(function(event){
               event.preventDefault();

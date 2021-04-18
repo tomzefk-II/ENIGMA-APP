@@ -53,19 +53,19 @@
     <script>
 
     $(document).ready(function(){
+      $("#close-btn").click(function(){
+        window.close();
+      });
 
-      connection.connect(function(err) {
-        if(err){
+      connection.getConnection(function(err, connection) {
+        console.log(connection);
+        if (err) {
           console.log("Disconnected!");
           checkingPlayerInfo(false);
           throw err;
-        }
+        } // not connected!
         console.log("Connected!");
         checkingPlayerInfo(true);
-      });
-
-      $("#close-btn").click(function(){
-        window.close();
       })
     })
 

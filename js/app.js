@@ -24,17 +24,12 @@ window.addEventListener('online', function(e) {
   internetConnection = true;
 });
 
-let connection = mysql.createConnection({
+let connection = mysql.createPool({
   host     : process.env.DB_HOST,
   user     : process.env.DB_USER,
   password : process.env.DB_PASS,
   database : process.env.DB_NAME
 });
-
-// console.log(process.env.DB_HOST);
-// console.log(process.env.DB_USER);
-// console.log(process.env.DB_PASS);
-// console.log(process.env.DB_NAME);
 
 let ObjectStores = [
   {
@@ -191,17 +186,18 @@ checkSettings = function(){
             var request = db.transaction(['settings'], "readwrite").objectStore("settings").add(defaultSettings[i]);
           }
           request.onsuccess = function(){
+            db.close();
             console.log("Default settings applied!");
             currentUserSettings = JSON.stringify(defaultSettings);
             localStorage.setItem("UserSettings", currentUserSettings);
             console.log("User Settings saved");
-            db.close();
             console.log("Done");
             goToNewWindow();
           }
         } else if(evt.target.result >= 1) {
           var request = db.transaction(['settings'], "readwrite").objectStore("settings").getAll();
           request.onsuccess = function(evt){
+            db.close();
             var currentSetting = evt.target.result;
             currentSetting.shift();
             currentUserSettings = JSON.stringify(currentSetting);
@@ -209,7 +205,6 @@ checkSettings = function(){
             console.log("User Settings retrieved");
             localStorage.setItem("UserSettings", currentUserSettings);
             console.log("User Settings saved");
-            db.close();
             initLoadingBarValue(100);
             console.log("Done");
             goToNewWindow();
@@ -222,7 +217,7 @@ checkSettings = function(){
   }
 }
 
-checkingPlayerInfo = function(connection){
+checkingPlayerInfo = function(internetConnection){
   var loginForm = document.getElementById("loginForm");
   var introDiv = document.getElementById("intro");
   var loadingBarDiv = document.getElementById("loadingBar");
@@ -240,16 +235,16 @@ checkingPlayerInfo = function(connection){
       request.onsuccess = function(evt){
         if(evt.target.result !== 0){
           console.log("Previous player info found.");
-          if(connection == true){
+          if(internetConnection == true){
             $(accText).attr("data-type", "register");
             var requestPlayerInfo = db.transaction(['players'], "readwrite").objectStore("players").getAll();
             requestPlayerInfo.onsuccess = function(playerInfo){
+              db.close();
               console.log(playerInfo);
               $(usernameInput).val(playerInfo.target.result[0].player_name);
               $(passwordInput).val(playerInfo.target.result[0].player_password);
               var automaticLogin = 1;
               $(".submitForm").click(formButtons(automaticLogin));
-              db.close();
             }
             setTimeout(function(){
               loginForm.style.visibility = "visible";
@@ -264,7 +259,7 @@ checkingPlayerInfo = function(connection){
         } else {
           db.close();
           console.log("Player info not found.");
-          if(navigator.onLine == true){
+          if(internetConnection == true){
             $(accText).attr("data-type", "login");
             setTimeout(function(){
               loginForm.style.visibility = "visible";
@@ -386,9 +381,10 @@ $(document).ready(function(){
       $("form").submit(function(event){
         event.preventDefault();
         if(sendingXHR == 0){
-            console.log("entered");
+            console.log("entered boas");
             connection.query("SELECT player_name FROM players WHERE player_name = '" + usernameVal + "' AND player_password = '" + passwordVal + "'", function (err, result) {
               if (err) throw err;
+              console.log(result);
               var playerInfoCountJSON = JSON.stringify(result);
               console.log(playerInfoCountJSON);
               var playerInfoCount = JSON.parse(playerInfoCountJSON);
@@ -446,9 +442,9 @@ $(document).ready(function(){
                               console.log(evt);
                               var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo);
                               request.onsuccess = function(evt){
+                                db.close();
                                 console.log(evt);
                                 console.log("Player info added!");
-                                db.close();
                                 goToHome();
                               }
                               request.onerror = function(evt){
@@ -471,6 +467,7 @@ $(document).ready(function(){
                 $("#submitError").text("Username or password wrong");
               }
             });
+            console.log("done");
         } else {
           console.log("Too soon, slow down!")
         }
@@ -579,9 +576,9 @@ $(document).ready(function(){
                                     console.log(evt);
                                     var request = db.transaction(['players'], "readwrite").objectStore("players").add(playerInfo);
                                     request.onsuccess = function(evt){
+                                      db.close();
                                       console.log(evt);
                                       console.log("Player info added!");
-                                      db.close();
                                       goToHome();
                                     }
                                     request.onerror = function(evt){

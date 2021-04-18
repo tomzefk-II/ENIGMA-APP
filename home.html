@@ -5,9 +5,12 @@
     <title>Hello World!</title>
     <link href="styles/styles.css" rel="stylesheet" type="text/css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="js/peerjs.min.js"></script>
     <script src="js/app.js"></script>
     <script src="js/oscConnection.js"></script>
+    <!-- <script src="js/discordrp.js"></script> -->
 </head>
 <body>
   <div class="app-menu">
@@ -84,7 +87,8 @@
       <div id="setting-bridge-connection" class="setting-item">
         <h3 class="setting-name">Bridge Connection</h3>
         <svg class="setting-toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          <path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
       </div>
       <div id="setting-theme" class="setting-item">
         <h3 class="setting-name">Theme</h3>
@@ -95,7 +99,7 @@
         <h3 id="configurebridge" class="setting-name" style="font-weight: 300; font-size: 18px;">Configure Bridge</h3>
         <br>
         <h5 id="localip" class="setting-name" style="font-weight: 300; font-size: 14px;"></h5>
-    </div>
+      </div>
     <div id="accountWrapper">
       <div class="account-icon-border">
         <svg class="account-icon" viewBox="0 0 24 24">
@@ -106,6 +110,7 @@
     </div>
   </div>
 
+  <!-- <script src="js/configurePeerjs.js"></script> -->
   <script>
 
     const { BrowserWindow } = require('electron').remote;
@@ -195,6 +200,7 @@
       player_hintsUsed: undefined,
     };
     $(document).ready(function(){
+      // updateDiscord("Inside Bridge", null, Date.now(), null, "logo", null, true)
 
       var openIDB = openIDBshortcut();
       openIDB.onupgradeneeded = function(evt) {
@@ -225,25 +231,21 @@
         document.getElementById("dimmer").style.visibility = "hidden";
       },500);
 
-      console.log(connections);
-
-
       localStorage.setItem("bridgeConnection", 0);
       updateConnectionStatus("bridge-connection", "errorConnection", "disabled");
       updateConnectionStatus("database-connection", "warningConnection", null);
 
-      connection.connect(function(err) {
-        if(err){
-          console.log("Disconnected!");
-          updateConnectionStatus("database-connection", "errorConnection", null);
-          throw err;
-        }
-        console.log("Connected!");
-        updateConnectionStatus("database-connection", "goodConnection", null);
-      });
+      connection.getConnection(function(err, connection) {
+          if(err){
+            console.log("Disconnected!");
+            updateConnectionStatus("database-connection", "errorConnection", null);
+            throw err;
+          }
+          console.log("Connected!");
+          updateConnectionStatus("database-connection", "goodConnection", null);
+      })
 
       checkGameDownloadStatus();
-
 
       var menuWrapper = document.getElementById("menu-wrapper");
       var playgamebtn = document.getElementById("playgame-btn");
@@ -378,14 +380,11 @@
     $("#configurebridge").click(function(){
       configurePWA();
     })
-
-
-      $("#minimize-btn").click(function(){
+    $("#minimize-btn").click(function(){
         var window = BrowserWindow.getFocusedWindow();
         window.minimize();
       });
-
-      $("#maximize-btn").click(function(){
+    $("#maximize-btn").click(function(){
         var window = BrowserWindow.getFocusedWindow();
         if(window.isMaximized()){
           window.unmaximize();
@@ -393,8 +392,7 @@
           window.maximize();
         }
       });
-
-      $("#close-btn").click(function(){
+    $("#close-btn").click(function(){
         var window = BrowserWindow.getFocusedWindow();
         window.close();
       });
@@ -408,22 +406,6 @@
       ipcRenderer.removeAllListeners('app_version');
       version.innerText = 'v' + arg.version;
     });
-
-
-
-    // const ws = require('ws')
-    // const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
-    // osc.open({ host: "192.168.1.85", port: 9010, secure: true });
-    // osc.on('open', () => {
-    //   console.log("Opened");
-    // })
-    // osc.on('/SendToBridge', message => {
-    //   console.log(message.address);
-    //   console.log(message.args[0]);
-    //   console.log(parseFloat(message.args[0]));
-    //
-
-    // })
 
     const { networkInterfaces } = require('os');
 
@@ -520,11 +502,10 @@
 
 
     configurePWA = function(){
-      // const http = require('http');
       console.log("Turning on configuration server");
       const options = {
-        key: fs.readFileSync('resources/cert/key.pem'), // resources/
-        cert: fs.readFileSync('resources/cert/cert.pem')
+        key: fs.readFileSync('cert/key.pem'), // resources/
+        cert: fs.readFileSync('cert/cert.pem')
       };
       var configurationServer = https.createServer(options, function (req, res) {
         console.log("Server created");
@@ -544,10 +525,7 @@
       })
     }
 
-    // const dgram = require('dgram')
-    // const OSC = require('osc-js')
-    // const socket = dgram.createSocket('udp4')
-    // const oscUDP = new OSC({ plugin: new OSC.DatagramPlugin() })
+
 
 
   </script>

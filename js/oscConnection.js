@@ -5,12 +5,19 @@ const fs = require("fs")
 let server;
 let wss;
 let socketPort;
-let pwa = {
+let pwaPlayer = {
   ip: null,
   port: null,
   version: null,
   player_id: null,
 };
+let pwaViewer = {
+  ip: null,
+  port: null,
+  version: null,
+  player_id: null,
+};
+let pwaViewers = [];
 
 let isUnrealConnectionReady = false;
 let isPWAConnectionReady = false;
@@ -93,47 +100,96 @@ udpPort.on("message", function(event){
       isBridgeToUnrealConnectionReady = true;
     }
   } else if(event.address == "/SendToBridge/playerPos"){
-    // console.log("Received player position");
     if(isPWAConnectionReady == true){
-      // console.log("Sending player position to PWA!");
-      socketPort.send({
-          address: "/SendFromBridge/UnrealPlayerPos",
-          args: [event.args[0]]
-      }, pwa.ip, pwa.port);
+      var i = 0;
+      function pwaViewersLoop() {
+        setTimeout(function() {
+          // console.log(pwaViewers[i].ip);
+          socketPort.send({
+              address: "/SendFromBridge/UnrealPlayerPos",
+              args: [event.args[0]]
+          }, pwaViewers[i].ip, pwaViewers[i].port);
+          i++;
+          if (i < pwaViewers.length) {
+            pwaViewersLoop();
+          }
+        }, 33)
+      }
+      if(pwaPlayer.ip !== null){
+        socketPort.send({
+            address: "/SendFromBridge/UnrealPlayerPos",
+            args: [event.args[0]]
+        }, pwaPlayer.ip, pwaPlayer.port);
+      }
+
+      pwaViewersLoop();
     } else {
       console.log("PWA is not connected!");
     }
   } else if(event.address == "/SendToBridge/playerHint"){
-    // console.log("Received player hint");
     if(isPWAConnectionReady == true){
-      // console.log("Sending player hint to PWA!");
-      socketPort.send({
-          address: "/SendFromBridge/playerHint",
-          args: [event.args[0]]
-      }, pwa.ip, pwa.port);
+      if(pwaPlayer.ip !== null){
+        socketPort.send({
+            address: "/SendFromBridge/playerHint",
+            args: [event.args[0]]
+        }, pwaPlayer.ip, pwaPlayer.port);
+      }
+      for(i=0; i < pwaViewers.length; i++){
+        socketPort.send({
+            address: "/SendFromBridge/playerHint",
+            args: [event.args[0]]
+        }, pwaViewers[i].ip, pwaViewers[i].port);
+      }
     } else {
       console.log("PWA is not connected!");
     }
   } else if(event.address == "/SendToBridge/MoveScaleObjsPos"){
-    // console.log("Received cube position");
     if(isPWAConnectionReady == true){
-      // console.log("Sending cube position to PWA!");
-      socketPort.send({
-          address: "/SendFromBridge/MoveScaleObjsPos",
-          args: [event.args[0]]
-      }, pwa.ip, pwa.port);
+      if(pwaPlayer.ip !== null){
+        socketPort.send({
+            address: "/SendFromBridge/MoveScaleObjsPos",
+            args: [event.args[0]]
+        }, pwaPlayer.ip, pwaPlayer.port);
+      }
+      for(i=0; i < pwaViewers.length; i++){
+        socketPort.send({
+            address: "/SendFromBridge/MoveScaleObjsPos",
+            args: [event.args[0]]
+        }, pwaViewers[i].ip, pwaViewers[i].port);
+      }
     } else {
       console.log("PWA is not connected!");
     }
-
   } else if(event.address == "/SendToBridge/fixedObjsPos"){
-    // console.log("Received cube position");
     if(isPWAConnectionReady == true){
-      // console.log("Sending cube position to PWA!");
-      socketPort.send({
-          address: "/SendFromBridge/fixedObjsPos",
-          args: [event.args[0]]
-      }, pwa.ip, pwa.port);
+      if(pwaPlayer.ip !== null){
+        console.log(event.args[0]);
+        socketPort.send({
+            address: "/SendFromBridge/fixedObjsPos",
+            args: [event.args[0]]
+        }, pwaPlayer.ip, pwaPlayer.port);
+      }
+      // for(i=0; i < pwaViewers.length; i++){
+      //   socketPort.send({
+      //       address: "/SendFromBridge/fixedObjsPos",
+      //       args: [event.args[0]]
+      //   }, pwaViewers[i].ip, pwaViewers[i].port);
+      // }
+      // var i = 0;
+      // function pwaViewersLoop() {
+      //   setTimeout(function() {
+      //     console.log(pwaViewers[i].ip);
+      //     socketPort.send({
+      //         address: "/SendFromBridge/fixedObjsPos",
+      //         args: [event.args[0]]
+      //     }, pwaViewers[i].ip, pwaViewers[i].port);
+      //     i++;
+      //     if (i < pwaViewers.length) {
+      //       pwaViewersLoop();
+      //     }
+      //   }, 33)
+      // }
+      // pwaViewersLoop();
     } else {
       console.log("PWA is not connected!");
     }
@@ -616,329 +672,6 @@ udpPort.on("close", function(){
 
 
 
-
-// let customMap = {
-//   "name": "ExampleMap",
-//   "author": "tomzefk",
-//   "creationDate": "11-04-2021",
-//   "levelOpen": {
-//     "position": {
-//       "x": 230,
-//       "y": 500,
-//       "z": 10,
-//     },
-//     "rotation": {
-//       "x": 45,
-//       "y": 45,
-//       "z": 45,
-//     }
-//   },
-//   "levelGoal": {
-//     "position": {
-//       "x": 1000,
-//       "y": 1000,
-//       "z": 400,
-//     },
-//     "rotation": {
-//       "x": 0,
-//       "y": 0,
-//       "z": 90,
-//     },
-//     "scale": {
-//       "x": 10,
-//       "y": 10,
-//       "z": 30,
-//     }
-//   },
-//   "movableCubes": [
-//     {
-//       "position": {
-//         "x": 70,
-//         "y": 10,
-//         "z": 5,
-//       },
-//       "rotation": {
-//         "x": 0,
-//         "y": 0,
-//         "z": 0,
-//       },
-//       "scale": {
-//         "x": 1,
-//         "y": 1,
-//         "z": 1,
-//       }
-//     }
-//   ],
-//   "fixedCubes": [
-//     {
-//       "position": {
-//         "x": -200,
-//         "y": -200,
-//         "z": -200,
-//       },
-//       "rotation": {
-//         "x": 45,
-//         "y": 270,
-//         "z": 90,
-//       },
-//       "scale": {
-//         "x": 4,
-//         "y": 4,
-//         "z": 1,
-//       }
-//     },
-//     {
-//       "position": {
-//         "x": 800,
-//         "y": 800,
-//         "z": 800,
-//       },
-//       "rotation": {
-//         "x": 45,
-//         "y": 45,
-//         "z": 45,
-//       },
-//       "scale": {
-//         "x": 2,
-//         "y": 2,
-//         "z": 1,
-//       }
-//     }
-//   ]
-// };
-//
-// testingSwitch = function(){
-//
-//   console.log(customMap);
-//
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/name",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.name
-//         }
-//     ]
-//   }, "127.0.0.1", 9007);
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/author",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.author
-//         }
-//     ]
-//   }, "127.0.0.1", 9007);
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/creationDate",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.creationDate
-//         }
-//     ]
-//   }, "127.0.0.1", 9007);
-//   //
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/levelOpen/position",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.levelOpen.position.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelOpen.position.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelOpen.position.z
-//         },
-//     ]
-//   }, "127.0.0.1", 9007);
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/levelOpen/rotation",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.levelOpen.rotation.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelOpen.rotation.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelOpen.rotation.z
-//         },
-//     ]
-//   }, "127.0.0.1", 9007);
-//   //
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/levelGoal/position",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.levelGoal.position.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelGoal.position.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelGoal.position.z
-//         },
-//     ]
-//   }, "127.0.0.1", 9007);
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/levelGoal/rotation",
-//     args: [
-//         {
-//             type: "s",
-//             value: customMap.levelGoal.rotation.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelGoal.rotation.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.levelGoal.rotation.z
-//         },
-//     ]
-//   }, "127.0.0.1", 9007);
-//   udpPort.send({
-//     address: "/SendFromBridge/customMap/load/levelGoal/scale",
-//     args: [
-//       {
-//           type: "s",
-//           value: customMap.levelGoal.scale.x
-//       },
-//       {
-//         type: "s",
-//         value: customMap.levelGoal.scale.y
-//       },
-//       {
-//         type: "s",
-//         value: customMap.levelGoal.scale.z
-//       },
-//     ]
-//   }, "127.0.0.1", 9007);
-//   //
-//   for(i=0; i < customMap.movableCubes.length; i++){
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/movableCubes/position",
-//       args: [
-//           {
-//               type: "s",
-//               value: customMap.movableCubes[i].position.x
-//           },
-//           {
-//             type: "s",
-//             value: customMap.movableCubes[i].position.y
-//           },
-//           {
-//             type: "s",
-//             value: customMap.movableCubes[i].position.z
-//           },
-//       ]
-//     }, "127.0.0.1", 9007);
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/movableCubes/rotation",
-//       args: [
-//           {
-//               type: "s",
-//               value: customMap.movableCubes[i].rotation.x
-//           },
-//           {
-//             type: "s",
-//             value: customMap.movableCubes[i].rotation.y
-//           },
-//           {
-//             type: "s",
-//             value: customMap.movableCubes[i].rotation.z
-//           },
-//       ]
-//     }, "127.0.0.1", 9007);
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/movableCubes/scale",
-//       args: [
-//         {
-//             type: "s",
-//             value: customMap.movableCubes[i].scale.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.movableCubes[i].scale.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.movableCubes[i].scale.z
-//         },
-//       ]
-//     }, "127.0.0.1", 9007);
-//   }
-//   for(i=0; i < customMap.fixedCubes.length; i++){
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/fixedCubes/position",
-//       args: [
-//           {
-//               type: "s",
-//               value: customMap.fixedCubes[i].position.x
-//           },
-//           {
-//             type: "s",
-//             value: customMap.fixedCubes[i].position.y
-//           },
-//           {
-//             type: "s",
-//             value: customMap.fixedCubes[i].position.z
-//           },
-//       ]
-//     }, "127.0.0.1", 9007);
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/fixedCubes/rotation",
-//       args: [
-//           {
-//               type: "s",
-//               value: customMap.fixedCubes[i].rotation.x
-//           },
-//           {
-//             type: "s",
-//             value: customMap.fixedCubes[i].rotation.y
-//           },
-//           {
-//             type: "s",
-//             value: customMap.fixedCubes[i].rotation.z
-//           },
-//       ]
-//     }, "127.0.0.1", 9007);
-//     udpPort.send({
-//       address: "/SendFromBridge/customMap/load/fixedCubes/scale",
-//       args: [
-//         {
-//             type: "s",
-//             value: customMap.fixedCubes[i].scale.x
-//         },
-//         {
-//           type: "s",
-//           value: customMap.fixedCubes[i].scale.y
-//         },
-//         {
-//           type: "s",
-//           value: customMap.fixedCubes[i].scale.z
-//         },
-//       ]
-//     }, "127.0.0.1", 9007);
-//   }
-// };
-
-
-
-
-
-
 toggleBridge = function(){
   var setting = $("#setting-bridge-connection .setting-toggle path");
   if($(setting).attr("d") == connections.bridge.status.activated.path){
@@ -946,12 +679,12 @@ toggleBridge = function(){
   } else {
     // Bridge to PWA
     server = https.createServer({
-      cert: fs.readFileSync('cert/cert.pem'), // resources/
-      key: fs.readFileSync('cert/key.pem')
+      cert: fs.readFileSync('resources/cert/cert.pem'), // resources/
+      key: fs.readFileSync('resources/cert/key.pem')
     });
     wss = new WebSocket.Server({ server });
     server.listen(9010);
-    server.maxConnections = 1;
+    server.maxConnections = 5;
 
     console.log("Bridge activated");
     wss.on("listening", function () {
@@ -966,128 +699,129 @@ toggleBridge = function(){
           metadata: false
       });
 
-      pwa.ip = socket._socket.remoteAddress;
-      pwa.port = socket._socket.remotePort;
-      console.log(pwa);
+      var tempPWA = {
+        isSpectator: null,
+        ip: null,
+        port: null,
+        version: null,
+        player_id: null,
+      }
+
+      tempPWA.ip = socket._socket.remoteAddress;
+      tempPWA.port = socket._socket.remotePort;
+      console.log(tempPWA);
 
       console.log("WebSocket Connection received");
-      updateConnectionStatus("bridge-connection", "goodConnection", null);
-
       socketPort.on("message", function (oscMsg) {
-        console.log("An OSC Message was received!");
-        console.log(oscMsg);
+        console.log("New connection arrived: ", oscMsg);
         if(oscMsg.address == "/playerInfo"){
-          let receivedPlayerInfo = JSON.parse(oscMsg.args[0]);
-          console.log("Received player info");
-          console.log(receivedPlayerInfo.player_id);
-          if(receivedPlayerInfo.player_id !== playerinfo.player_id){
-            var reason = "Connected client has not the same player ID!";
-            var errorCode = 4001;
-            console.log(errorCode + ": " + reason);
-            for(const client of wss.clients){
-              client.close(errorCode, reason);
-              console.log("Client Kicked!");
+          let receivedPWAInfo = JSON.parse(oscMsg.args[0]);
+          console.log("Received PWA Info: ", receivedPWAInfo);
+          console.log("Checking PWA version...");
+          if(receivedPWAInfo.pwaVersion == version.innerText){
+            tempPWA.version = receivedPWAInfo.pwaVersion;
+            console.log("PWA version is compatible with the Bridge version");
+            console.log("Checking player information");
+            if(receivedPWAInfo.player.player_id !== playerinfo.player_id){
+                console.log("Joining as spectator! -> ", tempPWA);
+                tempPWA.isSpectator = true;
+                tempPWA.player_id = receivedPWAInfo.player.player_id;
+                pwaViewers.push(tempPWA);
+                updateConnectionStatus("bridge-connection", "goodConnection", null);
+            } else if(receivedPWAInfo.player.player_id == playerinfo.player_id){
+              if(receivedPWAInfo.player.player_id == pwaPlayer.player_id){
+                var reason = "There is already a companion connected!";
+                var errorCode = 4003;
+                console.log(errorCode + ": " + reason);
+                for(const client of wss.clients){
+                  if(client._socket.remoteAddress == tempPWA.ip){
+                    client.close(errorCode, reason);
+                    console.log("Client Kicked!");
+                  }
+                }
+              } else {
+                console.log("Joining as companion! -> ", tempPWA);
+                tempPWA.isSpectator = false;
+                tempPWA.player_id = receivedPWAInfo.player.player_id;
+                pwaPlayer.ip = tempPWA.ip;
+                pwaPlayer.port = tempPWA.port;
+                pwaPlayer.version = tempPWA.version;
+                pwaPlayer.player_id = tempPWA.player_id;
+                updateConnectionStatus("bridge-connection", "goodConnection", null);
+              }
             }
-            pwa.player_id = null;
+            console.log("A Bridge connection to PWA was successfully made!");
+            isPWAConnectionReady = true;
+            if(isUnrealConnectionReady == false){
+              console.log("Unreal is not connected to the Bridge yet. Waiting...");
+            } else {
+              console.log("Preparing for sending player position to PWA");
+              udpPort.send({
+                address: "/SendFromBridge/pwaConnection",
+                args: [
+                    {
+                        type: "s",
+                        value: "Ready"
+                    }
+                ]
+              }, "127.0.0.1", 9007);
+            }
+            console.log(tempPWA.isSpectator);
+            socketPort.send({
+                address: "/SendFromBridge/viewType",
+                args: [tempPWA.isSpectator]
+            }, tempPWA.ip, tempPWA.port);
           } else {
-            console.log("Same player id");
-            pwa.player_id = receivedPlayerInfo.player_id;
-          }
-        } else if(oscMsg.address == "/pwaVersion"){
-          var currentVersion = version.innerText;
-          var receivedVersion = oscMsg.args[0];
-          console.log("Received PWA version info");
-          if(receivedVersion !== currentVersion) {
-            var reason = "Connected client has not the same app version!";
+            var reason = "This devices's PWA version is not compatible with the connected Bridge's!";
             var errorCode = 4002;
             console.log(errorCode + ": " + reason);
             for(const client of wss.clients){
-              client.close(errorCode, reason);
-              console.log("Client Kicked!");
+              if(client._socket.remoteAddress == tempPWA.ip){
+                client.close(errorCode, reason);
+                console.log("Client Kicked!");
+              }
             }
-            pwa.version = null;
-          } else {
-            console.log("Same app version");
-            pwa.version = receivedVersion;
           }
         }
-        if(pwa.player_id !== null && pwa.version !== null){
-          isPWAConnectionReady = true;
-          console.log("A Bridge connection to PWA was successfully made!");
-          console.log("Preparing for sending PWA ");
-          if(isUnrealConnectionReady == false){
-            console.log("Unreal is not connected to the Bridge yet. Waiting...");
-          } else {
-            console.log("Preparing for sending player position to PWA");
+      });
+
+      socketPort.on("close", function(socket){
+        console.log(socket);
+        // isPWAConnectionReady = false;
+        if(socket.target._socket.remoteAddress == pwaPlayer.ip){
+          console.log("Companion left the server!");
+          pwaPlayer.ip = null;
+          pwaPlayer.port = null,
+          pwaPlayer.version = null,
+          pwaPlayer.player_id = null;
+          if(isUnrealConnectionReady == true){
             udpPort.send({
               address: "/SendFromBridge/pwaConnection",
               args: [
                   {
                       type: "s",
-                      value: "Ready"
+                      value: "Disconnected"
                   }
               ]
             }, "127.0.0.1", 9007);
           }
-
+        } else {
+          console.log("A Viewer left the server!");
+          for(i = 0; i < pwaViewers.length; i++) {
+            if(pwaViewers[i].ip == socket.target._socket.remoteAddress){
+              pwaViewers.splice(i, 1);
+              console.log("Client successfully removed from viewers list.");
+            }
+          }
         }
-      });
-
-      socketPort.on("close", function(socket){
-        pwa.player_id = null
-        pwa.version = null
-        isPWAConnectionReady = false;
-        udpPort.send({
-          address: "/SendFromBridge/pwaConnection",
-          args: [
-              {
-                  type: "s",
-                  value: "Disconnected"
-              }
-          ]
-        }, "127.0.0.1", 9007);
-        console.log("Client disconnected");
-        updateConnectionStatus("bridge-connection", "warningConnection", null);
+        console.log("A Client disconnected");
+        if(pwaPlayer.player_id == null && pwaViewers.length == 0){
+          updateConnectionStatus("bridge-connection", "warningConnection", null);
+        } else {
+          updateConnectionStatus("bridge-connection", "goodConnection", null);
+        }
         //
       });
-
-      openUnrealToBridge = function(){
-        console.log("Trying to open UDP port");
-        var udpPort = new osc.UDPPort({
-            localAddress: "127.0.0.1",
-            localPort: 9008
-        });
-
-        // udpPort.open();
-        // udpPort.on("open", function(){
-        //   console.log("Opened connection to Unreal");
-        //   console.log("Waiting for Unreal to connect...");
-        // });
-
-        // udpPort.on("message", function(event){
-        //   console.log(event);
-        //   if(event.address == "/SendToBridge/playerPos"){
-        //     console.log("Received: " + event.args[0]);
-        //     console.log("Sending player position to PWA!");
-        //     socketPort.send({
-        //         address: "/SendFromBridge/UnrealPlayerPos",
-        //         args: [event.args[0]]
-        //     }, socket._socket.remoteAddress, socket._socket.remotePort);
-        //   } else if(event.address == "/SendToBridge/connection"){
-        //     var messageFromUnreal = event.args[0];
-        //     console.log("Received: " + messageFromUnreal);
-        //     if(messageFromUnreal == "Ready"){
-        //       console.log("A connection between Unreal and Bridge has been established!");
-        //       isUnrealConnectionReady = true;
-        //       socketPort.send({
-        //           address: "/SendFromBridge/UnrealConnection",
-        //           args: [messageFromUnreal]
-        //       }, socket._socket.remoteAddress, socket._socket.remotePort);
-        //     };
-        //   }
-        // })
-      }
-
     });
 
 
